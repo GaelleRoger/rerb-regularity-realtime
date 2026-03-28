@@ -1,12 +1,15 @@
 import os
 import re
+import unicodedata
 from pathlib import Path
 from typing import Optional
 
 import pandas as pd
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
+
+from utils.connexion_postgres import creer_engine
 
 RACINE = Path(__file__).parent.parent
 
@@ -17,23 +20,35 @@ TABLE_LOG = "fichiers_charges"
 
 PREFIXES = ["horaires_theoriques", "horaires_reels"]
 
+COLONNES_META = ["type_mission", "destination", "gare_depart", "nb_arrets_desservis"]
 
-def creer_engine() -> Engine:
-    """Crée et retourne un engine SQLAlchemy connecté à Postgres.
 
-    La configuration est lue depuis les variables d'environnement :
-    PG_HOST, PG_PORT, PG_USER, PG_PASSWORD, PG_DB.
+def normaliser_nom_colonne(nom: str) -> str:
+    """Normalise un nom de colonne pour le rendre compatible Postgres.
+
+    Transformations appliquées dans l'ordre :
+    - Suppression des parenthèses et de leur contenu.
+    - Suppression des accents (Unicode NFKD + filtre sur les caractères de base).
+    - Mise en minuscules.
+    - Remplacement des espaces et tirets par des underscores.
+    - Suppression des caractères non alphanumériques résiduels.
+    - Compression des underscores multiples en un seul.
+    - Suppression des underscores en début et fin.
+
+    Args:
+        nom: Nom de colonne original (ex: 'Saint-Rémy-lès-Chevreuse').
 
     Returns:
-        Engine SQLAlchemy prêt à l'emploi.
+        Nom normalisé (ex: 'saint_remy_les_chevreuse').
     """
-    host = os.getenv("PG_HOST", "localhost")
-    port = os.getenv("PG_PORT", "5432")
-    user = os.getenv("PG_USER", "postgres")
-    password = os.getenv("PG_PASSWORD", "")
-    db = os.getenv("PG_DB", "rerb_realtime")
-    url = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
-    return create_engine(url)
+    nom = re.sub(r"\(.*?\)", "", nom)
+    nom = unicodedata.normalize("NFKD", nom)
+    nom = "".join(c for c in nom if not unicodedata.combining(c))
+    nom = nom.lower()
+    nom = re.sub(r"[ \-]", "_", nom)
+    nom = re.sub(r"[^\w]", "", nom)
+    nom = re.sub(r"_+", "_", nom)
+    return nom.strip("_")
 
 
 def creer_table_log(engine: Engine) -> None:
@@ -76,6 +91,9 @@ def est_deja_charge(engine: Engine, nom_fichier: str) -> bool:
 def enregistrer_fichier(engine: Engine, nom_fichier: str) -> None:
     """Enregistre un fichier CSV dans la table de log après chargement.
 
+    Un seul enregistrement couvre les insertions dans les tables _trv
+    et slim issues du même fichier source.
+
     Args:
         engine: Engine SQLAlchemy connecté à Postgres.
         nom_fichier: Nom du fichier CSV (sans chemin).
@@ -111,36 +129,41 @@ def trouver_dernier_csv(prefixe: str) -> Optional[Path]:
     return chemin
 
 
-def charger_csv_en_base(engine: Engine, chemin: Path, table: str) -> None:
-    """Charge un fichier CSV dans une table Postgres.
+def charger_csv_en_base(
+    engine: Engine,
+    chemin: Path,
+    table: str,
+    colonnes_a_exclure: list[str],
+) -> None:
+    """Charge un fichier CSV dans une table Postgres après filtrage des colonnes.
 
     Insère les données en mode append (la table existante est conservée).
-    Enregistre ensuite le fichier dans fichiers_charges pour éviter
-    un double chargement futur.
+    Les colonnes listées dans colonnes_a_exclure sont retirées avant insertion.
 
     Args:
         engine: Engine SQLAlchemy connecté à Postgres.
         chemin: Chemin complet vers le fichier CSV.
         table: Nom de la table cible dans Postgres.
+        colonnes_a_exclure: Liste des colonnes à ne pas insérer.
+            Passer une liste vide pour insérer toutes les colonnes.
     """
-    nom_fichier = chemin.name
-
-    if est_deja_charge(engine, nom_fichier):
-        print(f"Déjà chargé, ignoré : {nom_fichier}")
-        return
-
     df = pd.read_csv(chemin)
+    colonnes_presentes = [c for c in colonnes_a_exclure if c in df.columns]
+    df = df.drop(columns=colonnes_presentes)
+    df = df.rename(columns=normaliser_nom_colonne)
     df.to_sql(table, engine, if_exists="append", index=False)
-    enregistrer_fichier(engine, nom_fichier)
-    print(f"Chargé ({len(df)} lignes) : {nom_fichier} → {table}")
+    print(f"Chargé ({len(df)} lignes) : {chemin.name} → {table}")
 
 
 def main() -> None:
     """Point d'entrée du script.
 
     Pour chaque préfixe (horaires_theoriques, horaires_reels) :
-    - identifie le CSV le plus récent dans data/raw/
-    - le charge dans la table Postgres correspondante si non déjà chargé
+    - Identifie le CSV le plus récent dans data/raw/.
+    - Si non déjà chargé :
+        - Insère toutes les colonnes dans la table _trv (travail).
+        - Insère les colonnes sans méta-données dans la table slim.
+    - Enregistre le fichier dans fichiers_charges (anti-doublon commun).
     """
     engine = creer_engine()
     creer_table_log(engine)
@@ -150,7 +173,14 @@ def main() -> None:
         if chemin is None:
             print(f"Aucun fichier trouvé pour le préfixe : {prefixe}")
             continue
-        charger_csv_en_base(engine, chemin, table=prefixe)
+
+        if est_deja_charge(engine, chemin.name):
+            print(f"Déjà chargé, ignoré : {chemin.name}")
+            continue
+
+        charger_csv_en_base(engine, chemin, table=f"{prefixe}_trv", colonnes_a_exclure=[])
+        charger_csv_en_base(engine, chemin, table=prefixe, colonnes_a_exclure=COLONNES_META)
+        enregistrer_fichier(engine, chemin.name)
 
 
 if __name__ == "__main__":
