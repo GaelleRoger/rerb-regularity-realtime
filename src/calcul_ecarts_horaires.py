@@ -10,7 +10,8 @@ RACINE = Path(__file__).parent.parent
 
 load_dotenv(RACINE / ".env")
 
-TABLE_ECARTS = "ecarts_horaires"
+TABLE_ECARTS = "detail_ecarts_horaires"
+TABLE_MOYENNE_ECARTS = "hist_moyenne_ecarts"
 TABLE_TH = "horaires_theoriques_trv"
 TABLE_REEL = "horaires_reels_trv"
 TABLE_REF = "referentiel_missions"
@@ -147,6 +148,57 @@ def creer_table_ecarts(engine: Engine) -> None:
     print(f"Table '{TABLE_ECARTS}' recréée ({len(colonnes_gares)} gares).")
 
 
+def creer_table_histo_ecarts(engine: Engine) -> None:
+    """Crée la table historique des écarts horaires.
+
+    A chaque extraction horaire, on calcule la moyenne des écarts horaires 
+    sur toutes les missions en circulation. 
+
+    Args:
+        engine: Engine SQLAlchemy connecté à Postgres.
+    """
+    with engine.begin() as conn:
+        conn.execute(text(f"""
+            CREATE TABLE IF NOT EXISTS {TABLE_MOYENNE_ECARTS} AS
+            WITH init AS (
+            SELECT mission, 
+            CASE WHEN ecart_max < 0 THEN 0 ELSE ecart_max END AS ecart_max
+            FROM detail_ecarts_horaires
+            WHERE ecart_max is not null
+            )
+            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max)
+            FROM init
+            GROUP BY 1
+        """))
+
+    print(f"Table '{TABLE_MOYENNE_ECARTS}' créée.")
+
+def charger_table_histo_ecarts(engine: Engine) -> None:
+    """Met à jour la table historique des écarts horaires.
+
+    A chaque extraction horaire, on calcule la moyenne des écarts horaires 
+    sur toutes les missions en circulation. Cet écart moyen est historisé afin de suivre l'évolution.
+
+    Args:
+        engine: Engine SQLAlchemy connecté à Postgres.
+    """
+    with engine.begin() as conn:
+        conn.execute(text(f"""
+            INSERT INTO {TABLE_MOYENNE_ECARTS}
+            WITH init AS (
+            SELECT mission, 
+            CASE WHEN ecart_max < 0 THEN 0 ELSE ecart_max END AS ecart_max
+            FROM detail_ecarts_horaires
+            WHERE ecart_max is not null
+            )
+            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max)
+            FROM init
+            GROUP BY 1
+        """))
+
+    print(f"Table '{TABLE_MOYENNE_ECARTS}' mise à jour.")
+
+
 def main() -> None:
     """Point d'entrée du script.
 
@@ -155,6 +207,8 @@ def main() -> None:
     """
     engine = creer_engine()
     creer_table_ecarts(engine)
+    creer_table_histo_ecarts(engine)
+    charger_table_histo_ecarts(engine)
 
 
 if __name__ == "__main__":
