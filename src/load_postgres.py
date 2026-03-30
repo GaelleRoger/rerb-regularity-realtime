@@ -1,4 +1,3 @@
-import os
 import re
 import unicodedata
 from pathlib import Path
@@ -108,8 +107,8 @@ def enregistrer_fichier(engine: Engine, nom_fichier: str) -> None:
 def trouver_dernier_csv(prefixe: str) -> Optional[Path]:
     """Retourne le chemin du CSV le plus récent pour un préfixe donné.
 
-    La sélection se base sur le timestamp YYYYMMDD_HHMMSS présent dans
-    le nom du fichier (format : {prefixe}_YYYYMMDD_HHMMSS.csv).
+    La sélection se base sur la date de modification du fichier, ce qui
+    reste correct quel que soit le fuseau horaire utilisé dans le nom.
 
     Args:
         prefixe: Préfixe du fichier à rechercher (ex: 'horaires_theoriques').
@@ -117,16 +116,11 @@ def trouver_dernier_csv(prefixe: str) -> Optional[Path]:
     Returns:
         Chemin vers le fichier le plus récent, ou None si aucun fichier trouvé.
     """
-    pattern = re.compile(rf"^{re.escape(prefixe)}_(\d{{8}}_\d{{6}})\.csv$")
-    candidats = [
-        (m.group(1), f)
-        for f in DOSSIER_RAW.iterdir()
-        if (m := pattern.match(f.name))
-    ]
+    pattern = re.compile(rf"^{re.escape(prefixe)}_\d{{8}}_\d{{6}}\.csv$")
+    candidats = [f for f in DOSSIER_RAW.iterdir() if pattern.match(f.name)]
     if not candidats:
         return None
-    _, chemin = max(candidats, key=lambda x: x[0])
-    return chemin
+    return max(candidats, key=lambda f: f.stat().st_mtime)
 
 
 def charger_csv_en_base(

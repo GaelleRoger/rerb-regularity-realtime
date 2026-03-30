@@ -27,21 +27,31 @@ FULL OUTER JOIN tmp
 ON init.type_mission = tmp.mission_tmp
 
 
-with init_reel as (select t.* ,
+with th as(select mission, 'theorique' as type_horaire, luxembourg, nb_arrets_desservis, date_observation,
 MAX(date_observation) OVER () as date_max
-from horaires_reels_trv t),
-reel as (SELECT *
-FROM init_reel
-WHERE date_observation = date_max),
-init_th as (select t.* ,
+from horaires_theoriques_trv
+where luxembourg is not null),
+reel as (select mission, 'reel' as type_horaire, luxembourg, nb_arrets_desservis, date_observation,
 MAX(date_observation) OVER () as date_max
-from horaires_theoriques_trv t),
-th as (SELECT *
-FROM init_th
-WHERE date_observation = date_max)
-SELECT *
-FROM th
+from horaires_reels_trv
+where luxembourg is not null),
+concat as (select * from th WHERE date_observation = date_max
 UNION ALL
-SELECT *
-FROM reel
-ORDER BY mission
+select * from reel WHERE date_observation = date_max),
+compact as (select mission, type_horaire, luxembourg 
+from
+concat c
+INNER JOIN referentiel_missions r
+ON SUBSTRING(c.mission,1,4) = r.code_mission
+WHERE nb_arrets_desservis < nb_arrets_mission)
+SELECT
+    mission,
+    ROUND(
+        EXTRACT(EPOCH FROM (
+            MAX(luxembourg::timestamptz) FILTER (WHERE type_horaire = 'reel')
+          - MAX(luxembourg::timestamptz) FILTER (WHERE type_horaire = 'theorique')
+        )) / 60
+    )::INTEGER AS luxembourg
+FROM compact
+GROUP BY mission
+ORDER BY mission;
