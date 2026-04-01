@@ -4,7 +4,6 @@ Ce DAG orchestre l'exécution des scripts situés dans PROJET/src/
 """
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 import sys
@@ -77,5 +76,14 @@ ecarts_task_bash = BashOperator(
     dag=dag,
 )
 
-# Définir la dépendancesticsearch_task_bash
-extract_task_bash >> load_task_bash >> referentiel_task_bash >> ecarts_task_bash
+allongement_task_bash = BashOperator(
+    task_id='calcul_allongement_parcours',
+    bash_command=(
+        f'export PYTHONPATH=/opt/airflow:$PYTHONPATH && '
+        f'cd {PIPELINE_PATH} && '
+        'python3 calcul_allongement_parcours.py'
+    ),
+    dag=dag,
+)
+
+extract_task_bash >> load_task_bash >> referentiel_task_bash >> ecarts_task_bash >> allongement_task_bash

@@ -166,7 +166,9 @@ def creer_table_histo_ecarts(engine: Engine) -> None:
             FROM detail_ecarts_horaires
             WHERE ecart_max is not null
             )
-            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max)
+            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max) as ecart_moyen,
+            percentile_cont(0.5) WITHIN GROUP (ORDER BY ecart_max) as ecart_median,
+            MAX(ecart_max) as ecart_max
             FROM init
             GROUP BY 1
         """))
@@ -191,7 +193,9 @@ def charger_table_histo_ecarts(engine: Engine) -> None:
             FROM detail_ecarts_horaires
             WHERE ecart_max is not null
             )
-            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max)
+            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max) as ecart_moyen,
+            percentile_cont(0.5) WITHIN GROUP (ORDER BY ecart_max) as ecart_median,
+            MAX(ecart_max) as ecart_max
             FROM init
             GROUP BY 1
         """))
