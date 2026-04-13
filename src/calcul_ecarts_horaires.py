@@ -106,7 +106,7 @@ def generer_sql_ecarts(colonnes_gares: list[str]) -> str:
     ),
     compact AS (
         SELECT
-            c.mission, c.type_horaire, c.nb_arrets_desservis,
+            c.mission, r.direction, c.type_horaire, c.nb_arrets_desservis,
             {cols_select_compact}
         FROM concat c
         INNER JOIN {TABLE_REF} r
@@ -115,10 +115,10 @@ def generer_sql_ecarts(colonnes_gares: list[str]) -> str:
     ),
     ecarts AS (
         SELECT
-            mission,
+            mission, direction,
             {cols_ecarts}
         FROM compact
-        GROUP BY mission
+        GROUP BY 1,2
     )
     SELECT
         *,
@@ -161,16 +161,16 @@ def creer_table_histo_ecarts(engine: Engine) -> None:
         conn.execute(text(f"""
             CREATE TABLE IF NOT EXISTS {TABLE_MOYENNE_ECARTS} AS
             WITH init AS (
-            SELECT mission, 
+            SELECT mission, direction,
             CASE WHEN ecart_max < 0 THEN 0 ELSE ecart_max END AS ecart_max
             FROM detail_ecarts_horaires
             WHERE ecart_max is not null
             )
-            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max) as ecart_moyen,
+            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, direction, AVG(ecart_max) as ecart_moyen,
             percentile_cont(0.5) WITHIN GROUP (ORDER BY ecart_max) as ecart_median,
             MAX(ecart_max) as ecart_max
             FROM init
-            GROUP BY 1
+            GROUP BY 1,2
         """))
 
     print(f"Table '{TABLE_MOYENNE_ECARTS}' créée.")
@@ -188,16 +188,16 @@ def charger_table_histo_ecarts(engine: Engine) -> None:
         conn.execute(text(f"""
             INSERT INTO {TABLE_MOYENNE_ECARTS}
             WITH init AS (
-            SELECT mission, 
+            SELECT mission, direction,
             CASE WHEN ecart_max < 0 THEN 0 ELSE ecart_max END AS ecart_max
             FROM detail_ecarts_horaires
             WHERE ecart_max is not null
             )
-            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, AVG(ecart_max) as ecart_moyen,
+            SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, direction, AVG(ecart_max) as ecart_moyen,
             percentile_cont(0.5) WITHIN GROUP (ORDER BY ecart_max) as ecart_median,
             MAX(ecart_max) as ecart_max
             FROM init
-            GROUP BY 1
+            GROUP BY 1,2
         """))
 
     print(f"Table '{TABLE_MOYENNE_ECARTS}' mise à jour.")

@@ -19,6 +19,7 @@ SQL_CREATION_REF  = f"""
     WITH init AS (
         SELECT
             type_mission as code_mission,
+            (CASE WHEN SUBSTRING(type_mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction,
             gare_depart,
             destination as gare_destination,
             nb_arrets_desservis,
@@ -28,7 +29,7 @@ SQL_CREATION_REF  = f"""
         FROM horaires_theoriques_trv
     )
     SELECT DISTINCT
-        code_mission,
+        code_mission, direction,
         gare_depart, gare_destination,
         nb_arrets_max as nb_arrets_mission
     FROM init
@@ -40,6 +41,7 @@ SQL_CREATION_TMP = f"""
     WITH init AS (
         SELECT
             type_mission as code_mission,
+            (CASE WHEN SUBSTRING(type_mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction,
             gare_depart, destination as gare_destination,
             nb_arrets_desservis,
             date_observation,
@@ -50,7 +52,7 @@ SQL_CREATION_TMP = f"""
         FROM horaires_theoriques_trv
     )
     SELECT DISTINCT
-        code_mission,
+        code_mission, direction,
         gare_depart, gare_destination,
         nb_arrets_max as nb_arrets_mission
     FROM init
@@ -61,10 +63,13 @@ SQL_CREATION_TMP = f"""
 SQL_CREATION_BUFFER  = f"""
     CREATE TABLE {TABLE_BUFFER} AS
     WITH init as (select * from referentiel_missions),
-    tmp as (SELECT code_mission as mission_tmp, gare_depart as depart_tmp,
+    tmp as (SELECT code_mission as mission_tmp, 
+    (CASE WHEN SUBSTRING(code_mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction_tmp,
+    gare_depart as depart_tmp,
     gare_destination as destination_tmp, nb_arrets_mission as nb_tmp
     FROM referentiel_missions_tmp)
     SELECT COALESCE(code_mission, mission_tmp) as code_mission,
+    COALESCE(direction, direction_tmp) as direction,
     COALESCE(gare_depart,depart_tmp) as gare_depart,
     COALESCE(gare_destination, destination_tmp) as gare_destination,
     COALESCE(nb_arrets_mission, nb_tmp) as nb_arrets_mission

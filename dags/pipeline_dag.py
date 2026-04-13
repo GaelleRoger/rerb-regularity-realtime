@@ -86,4 +86,14 @@ allongement_task_bash = BashOperator(
     dag=dag,
 )
 
-extract_task_bash >> load_task_bash >> referentiel_task_bash >> ecarts_task_bash >> allongement_task_bash
+regularite_task_bash = BashOperator(
+    task_id='calcul_regularite',
+    bash_command=(
+        f'export PYTHONPATH=/opt/airflow:$PYTHONPATH && '
+        f'cd {PIPELINE_PATH} && '
+        'python3 calcul_regularite.py'
+    ),
+    dag=dag,
+)
+
+extract_task_bash >> load_task_bash >> referentiel_task_bash >> regularite_task_bash >> ecarts_task_bash >> allongement_task_bash

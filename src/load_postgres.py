@@ -141,7 +141,11 @@ def charger_csv_en_base(
         colonnes_a_exclure: Liste des colonnes à ne pas insérer.
             Passer une liste vide pour insérer toutes les colonnes.
     """
-    df = pd.read_csv(chemin)
+    lignes_brutes = sum(1 for _ in chemin.open()) - 1  # -1 pour l'en-tête
+    df = pd.read_csv(chemin, on_bad_lines="skip")
+    lignes_skippees = lignes_brutes - len(df)
+    if lignes_skippees > 0:
+        print(f"[ATTENTION] {lignes_skippees} ligne(s) ignorée(s) (format invalide) : {chemin.name}")
     colonnes_presentes = [c for c in colonnes_a_exclure if c in df.columns]
     df = df.drop(columns=colonnes_presentes)
     df = df.rename(columns=normaliser_nom_colonne)
