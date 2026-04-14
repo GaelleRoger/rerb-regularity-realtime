@@ -17,134 +17,53 @@ SQL_RECONSTRUCTION = f"""
 
     CREATE TABLE {TABLE_CIBLE} AS
     WITH init AS (
-        SELECT
-            date_observation,
-            MIN(date_observation) OVER (PARTITION BY mission) AS date_min,
-            mission, sceaux, antony, bourg_la_reine, chatelet_les_halles,
-            aulnay_sous_bois, aeroport_cdg_1_rer, vert_galant,
-            (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction
-        FROM horaires_theoriques_trv
-    ),
-
-    delta_heure AS (
-        SELECT
-            date_min, mission, direction,
-            EXTRACT(hour FROM sceaux::timestamp)              AS heure_sceaux,
-            LAG(sceaux) OVER (PARTITION BY direction ORDER BY sceaux)                        AS sceaux_precedent, sceaux,
-            EXTRACT(hour FROM antony::timestamp)              AS heure_antony,
-            LAG(antony) OVER (PARTITION BY direction ORDER BY antony)                        AS antony_precedent, antony,
-            EXTRACT(hour FROM bourg_la_reine::timestamp)      AS heure_bourg_la_reine,
-            LAG(bourg_la_reine) OVER (PARTITION BY direction ORDER BY bourg_la_reine)        AS bourg_la_reine_precedent, bourg_la_reine,
-            EXTRACT(hour FROM chatelet_les_halles::timestamp) AS heure_chatelet,
-            LAG(chatelet_les_halles) OVER (PARTITION BY direction ORDER BY chatelet_les_halles) AS chatelet_precedent, chatelet_les_halles,
-            EXTRACT(hour FROM aulnay_sous_bois::timestamp)    AS heure_aulnay,
-            LAG(aulnay_sous_bois) OVER (PARTITION BY direction ORDER BY aulnay_sous_bois)    AS aulnay_precedent, aulnay_sous_bois,
-            EXTRACT(hour FROM aeroport_cdg_1_rer::timestamp)  AS heure_cdg1,
-            LAG(aeroport_cdg_1_rer) OVER (PARTITION BY direction ORDER BY aeroport_cdg_1_rer) AS cdg1_precedent, aeroport_cdg_1_rer,
-            EXTRACT(hour FROM vert_galant::timestamp)         AS heure_vert_galant,
-            LAG(vert_galant) OVER (PARTITION BY direction ORDER BY vert_galant)              AS vert_galant_precedent, vert_galant
-        FROM init
-        WHERE date_observation = date_min
-        ORDER BY direction, chatelet_les_halles
-    ),
-
-    sceaux AS (
-        SELECT mission, direction, heure_sceaux, sceaux, sceaux_precedent,
-            ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER AS delta_sceaux
-        FROM delta_heure WHERE sceaux IS NOT NULL
-    ),
-    antony AS (
-        SELECT mission, direction, heure_antony, antony, antony_precedent,
-            ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER AS delta_antony
-        FROM delta_heure WHERE antony IS NOT NULL
-    ),
-    bourg_la_reine AS (
-        SELECT mission, direction, heure_bourg_la_reine, bourg_la_reine, bourg_la_reine_precedent,
-            ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine
-        FROM delta_heure WHERE bourg_la_reine IS NOT NULL
-    ),
-    chatelet AS (
-        SELECT mission, direction, heure_chatelet, chatelet_les_halles, chatelet_precedent,
-            ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER AS delta_chatelet
-        FROM delta_heure WHERE chatelet_les_halles IS NOT NULL
-    ),
-    aulnay AS (
-        SELECT mission, direction, heure_aulnay, aulnay_sous_bois, aulnay_precedent,
-            ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER AS delta_aulnay
-        FROM delta_heure WHERE aulnay_sous_bois IS NOT NULL
-    ),
-    cdg1 AS (
-        SELECT mission, direction, heure_cdg1, aeroport_cdg_1_rer, cdg1_precedent,
-            ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER AS delta_cdg1
-        FROM delta_heure WHERE aeroport_cdg_1_rer IS NOT NULL
-    ),
-    vert_galant AS (
-        SELECT mission, direction, heure_vert_galant, vert_galant, vert_galant_precedent,
-            ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER AS delta_vert_galant
-        FROM delta_heure WHERE vert_galant IS NOT NULL
-    ),
-
-    agg_sceaux AS (
-        SELECT heure_sceaux AS heure, direction,
-            AVG(delta_sceaux)  AS delta_sceaux_min,
-            MAX(delta_sceaux)  AS max_delta_sceaux
-        FROM sceaux GROUP BY 1, 2
-    ),
-    agg_antony AS (
-        SELECT heure_antony AS heure, direction,
-            AVG(delta_antony)  AS delta_antony_min,
-            MAX(delta_antony)  AS max_delta_antony
-        FROM antony GROUP BY 1, 2
-    ),
-    agg_bourg_la_reine AS (
-        SELECT heure_bourg_la_reine AS heure, direction,
-            AVG(delta_bourg_la_reine)  AS delta_bourg_la_reine_min,
-            MAX(delta_bourg_la_reine)  AS max_delta_bourg_la_reine
-        FROM bourg_la_reine GROUP BY 1, 2
-    ),
-    agg_chatelet AS (
-        SELECT heure_chatelet AS heure, direction,
-            AVG(delta_chatelet)  AS delta_chatelet_min,
-            MAX(delta_chatelet)  AS max_delta_chatelet
-        FROM chatelet GROUP BY 1, 2
-    ),
-    agg_aulnay AS (
-        SELECT heure_aulnay AS heure, direction,
-            AVG(delta_aulnay)  AS delta_aulnay_min,
-            MAX(delta_aulnay)  AS max_delta_aulnay
-        FROM aulnay GROUP BY 1, 2
-    ),
-    agg_cdg1 AS (
-        SELECT heure_cdg1 AS heure, direction,
-            AVG(delta_cdg1)  AS delta_cdg1_min,
-            MAX(delta_cdg1)  AS max_delta_cdg1
-        FROM cdg1 GROUP BY 1, 2
-    ),
-    agg_vert_galant AS (
-        SELECT heure_vert_galant AS heure, direction,
-            AVG(delta_vert_galant)  AS delta_vert_galant_min,
-            MAX(delta_vert_galant)  AS max_delta_vert_galant
-        FROM vert_galant GROUP BY 1, 2
-    )
-
     SELECT
-        COALESCE(s.heure, a.heure, b.heure, c.heure, au.heure, cdg.heure, vg.heure) AS heure,
-        COALESCE(s.direction, a.direction, b.direction, c.direction, au.direction, cdg.direction, vg.direction) AS direction,
-        s.delta_sceaux_min,         s.max_delta_sceaux,
-        a.delta_antony_min,         a.max_delta_antony,
-        b.delta_bourg_la_reine_min, b.max_delta_bourg_la_reine,
-        c.delta_chatelet_min,       c.max_delta_chatelet,
-        au.delta_aulnay_min,        au.max_delta_aulnay,
-        cdg.delta_cdg1_min,         cdg.max_delta_cdg1,
-        vg.delta_vert_galant_min,   vg.max_delta_vert_galant
-    FROM agg_chatelet  c
-        FULL OUTER JOIN agg_antony       a   ON c.heure = a.heure   AND c.direction = a.direction
-        FULL OUTER JOIN agg_bourg_la_reine b ON c.heure = b.heure   AND c.direction = b.direction
-        FULL OUTER JOIN agg_sceaux     s     ON c.heure = s.heure   AND c.direction = s.direction
-        FULL OUTER JOIN agg_aulnay       au  ON c.heure = au.heure  AND c.direction = au.direction
-        FULL OUTER JOIN agg_cdg1         cdg ON c.heure = cdg.heure AND c.direction = cdg.direction
-        FULL OUTER JOIN agg_vert_galant  vg  ON c.heure = vg.heure  AND c.direction = vg.direction
-    ORDER BY heure, direction
+        date_observation,
+        MIN(date_observation) OVER (PARTITION BY mission) AS date_min,
+        mission, sceaux, antony, bourg_la_reine, chatelet_les_halles,
+        aulnay_sous_bois, aeroport_cdg_1_rer, vert_galant,
+        (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N','M','G') THEN 'Nord' ELSE 'Sud' END) AS direction
+    FROM horaires_theoriques_trv
+),
+delta AS (
+    SELECT
+        date_min, mission, direction,
+        EXTRACT(hour FROM sceaux::timestamp)              AS heure_sceaux,
+        LAG(sceaux) OVER (PARTITION BY direction ORDER BY sceaux)                          AS sceaux_precedent, sceaux,
+        EXTRACT(hour FROM antony::timestamp)              AS heure_antony,
+        LAG(antony) OVER (PARTITION BY direction ORDER BY antony)                          AS antony_precedent, antony,
+        EXTRACT(hour FROM bourg_la_reine::timestamp)      AS heure_bourg_la_reine,
+        LAG(bourg_la_reine) OVER (PARTITION BY direction ORDER BY bourg_la_reine)          AS bourg_la_reine_precedent, bourg_la_reine,
+        EXTRACT(hour FROM chatelet_les_halles::timestamp) AS heure_chatelet,
+        LAG(chatelet_les_halles) OVER (PARTITION BY direction ORDER BY chatelet_les_halles) AS chatelet_precedent, chatelet_les_halles,
+        EXTRACT(hour FROM aulnay_sous_bois::timestamp)    AS heure_aulnay,
+        LAG(aulnay_sous_bois) OVER (PARTITION BY direction ORDER BY aulnay_sous_bois)      AS aulnay_precedent, aulnay_sous_bois,
+        EXTRACT(hour FROM aeroport_cdg_1_rer::timestamp)  AS heure_cdg1,
+        LAG(aeroport_cdg_1_rer) OVER (PARTITION BY direction ORDER BY aeroport_cdg_1_rer)  AS cdg1_precedent, aeroport_cdg_1_rer,
+        EXTRACT(hour FROM vert_galant::timestamp)         AS heure_vert_galant,
+        LAG(vert_galant) OVER (PARTITION BY direction ORDER BY vert_galant)                AS vert_galant_precedent, vert_galant
+    FROM init
+    WHERE date_observation = date_min
+    ORDER BY direction, chatelet_les_halles
+)
+SELECT
+    mission,
+    direction,
+    heure_sceaux             AS heure_th_sceaux,
+    ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER             AS delta_sceaux,
+    heure_antony             AS heure_th_antony,
+    ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER             AS delta_antony,
+    heure_bourg_la_reine     AS heure_th_bourg_la_reine,
+    ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine,
+    heure_chatelet           AS heure_th_chatelet,
+    ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER  AS delta_chatelet,
+    heure_aulnay             AS heure_th_aulnay,
+    ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER   AS delta_aulnay,
+    heure_cdg1               AS heure_th_cdg1,
+    ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER   AS delta_cdg1,
+    heure_vert_galant        AS heure_th_vert_galant,
+    ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER   AS delta_vert_galant
+FROM delta;
 """
 
 
@@ -154,137 +73,55 @@ SQL_RECONSTRUCTION_REELLE = f"""
     DROP TABLE IF EXISTS {TABLE_CIBLE_REELLE};
 
     CREATE TABLE {TABLE_CIBLE_REELLE} AS
-    WITH init AS (
-        SELECT
-            mission,
-            (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q') THEN 'Nord' ELSE 'Sud' END) AS direction,
-            MAX(sceaux) AS sceaux, MAX(antony) AS antony,
-            MAX(bourg_la_reine) AS bourg_la_reine, MAX(chatelet_les_halles) AS chatelet_les_halles,
-            MAX(aulnay_sous_bois) AS aulnay_sous_bois,
-            MAX(aeroport_cdg_1_rer) AS aeroport_cdg_1_rer, MAX(vert_galant) AS vert_galant
-        FROM horaires_reels_trv
-        GROUP BY 1, 2
-        ORDER BY direction, chatelet_les_halles
-    ),
+    WITH init as (SELECT 
+        mission, (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N','M','G') THEN 'Nord' ELSE 'Sud' END) AS direction,
+        MAX(sceaux) as sceaux, MAX(antony) as antony,
+        MAX(bourg_la_reine) as bourg_la_reine, MAX(chatelet_les_halles) as chatelet_les_halles,
+        MAX(aulnay_sous_bois) as aulnay_sous_bois, 
+        MAX(aeroport_cdg_1_rer) as aeroport_cdg_1_rer, MAX(vert_galant) as vert_galant
+    FROM horaires_reels_trv
+    GROUP BY 1,2
+    ORDER BY direction, chatelet_les_halles
+),
 
-    delta_heure AS (
-        SELECT
-            mission, direction,
-            EXTRACT(hour FROM sceaux::timestamp)              AS heure_sceaux,
-            LAG(sceaux) OVER (PARTITION BY direction ORDER BY sceaux)                          AS sceaux_precedent, sceaux,
-            EXTRACT(hour FROM antony::timestamp)              AS heure_antony,
-            LAG(antony) OVER (PARTITION BY direction ORDER BY antony)                          AS antony_precedent, antony,
-            EXTRACT(hour FROM bourg_la_reine::timestamp)      AS heure_bourg_la_reine,
-            LAG(bourg_la_reine) OVER (PARTITION BY direction ORDER BY bourg_la_reine)          AS bourg_la_reine_precedent, bourg_la_reine,
-            EXTRACT(hour FROM chatelet_les_halles::timestamp) AS heure_chatelet,
-            LAG(chatelet_les_halles) OVER (PARTITION BY direction ORDER BY chatelet_les_halles) AS chatelet_precedent, chatelet_les_halles,
-            EXTRACT(hour FROM aulnay_sous_bois::timestamp)    AS heure_aulnay,
-            LAG(aulnay_sous_bois) OVER (PARTITION BY direction ORDER BY aulnay_sous_bois)      AS aulnay_precedent, aulnay_sous_bois,
-            EXTRACT(hour FROM aeroport_cdg_1_rer::timestamp)  AS heure_cdg1,
-            LAG(aeroport_cdg_1_rer) OVER (PARTITION BY direction ORDER BY aeroport_cdg_1_rer)  AS cdg1_precedent, aeroport_cdg_1_rer,
-            EXTRACT(hour FROM vert_galant::timestamp)         AS heure_vert_galant,
-            LAG(vert_galant) OVER (PARTITION BY direction ORDER BY vert_galant)                AS vert_galant_precedent, vert_galant
-        FROM init
-        ORDER BY direction, chatelet_les_halles
-    ),
-
-    sceaux AS (
-        SELECT mission, direction, heure_sceaux, sceaux, sceaux_precedent,
-            ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER AS delta_sceaux
-        FROM delta_heure WHERE sceaux IS NOT NULL
-    ),
-    antony AS (
-        SELECT mission, direction, heure_antony, antony, antony_precedent,
-            ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER AS delta_antony
-        FROM delta_heure WHERE antony IS NOT NULL
-    ),
-    bourg_la_reine AS (
-        SELECT mission, direction, heure_bourg_la_reine, bourg_la_reine, bourg_la_reine_precedent,
-            ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine
-        FROM delta_heure WHERE bourg_la_reine IS NOT NULL
-    ),
-    chatelet AS (
-        SELECT mission, direction, heure_chatelet, chatelet_les_halles, chatelet_precedent,
-            ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER AS delta_chatelet
-        FROM delta_heure WHERE chatelet_les_halles IS NOT NULL
-    ),
-    aulnay AS (
-        SELECT mission, direction, heure_aulnay, aulnay_sous_bois, aulnay_precedent,
-            ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER AS delta_aulnay
-        FROM delta_heure WHERE aulnay_sous_bois IS NOT NULL
-    ),
-    cdg1 AS (
-        SELECT mission, direction, heure_cdg1, aeroport_cdg_1_rer, cdg1_precedent,
-            ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER AS delta_cdg1
-        FROM delta_heure WHERE aeroport_cdg_1_rer IS NOT NULL
-    ),
-    vert_galant AS (
-        SELECT mission, direction, heure_vert_galant, vert_galant, vert_galant_precedent,
-            ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER AS delta_vert_galant
-        FROM delta_heure WHERE vert_galant IS NOT NULL
-    ),
-
-    agg_sceaux AS (
-        SELECT heure_sceaux AS heure, direction,
-            AVG(delta_sceaux)  AS delta_sceaux_min,
-            MAX(delta_sceaux)  AS max_delta_sceaux
-        FROM sceaux GROUP BY 1, 2
-    ),
-    agg_antony AS (
-        SELECT heure_antony AS heure, direction,
-            AVG(delta_antony)  AS delta_antony_min,
-            MAX(delta_antony)  AS max_delta_antony
-        FROM antony GROUP BY 1, 2
-    ),
-    agg_bourg_la_reine AS (
-        SELECT heure_bourg_la_reine AS heure, direction,
-            AVG(delta_bourg_la_reine)  AS delta_bourg_la_reine_min,
-            MAX(delta_bourg_la_reine)  AS max_delta_bourg_la_reine
-        FROM bourg_la_reine GROUP BY 1, 2
-    ),
-    agg_chatelet AS (
-        SELECT heure_chatelet AS heure, direction,
-            AVG(delta_chatelet)  AS delta_chatelet_min,
-            MAX(delta_chatelet)  AS max_delta_chatelet
-        FROM chatelet GROUP BY 1, 2
-    ),
-    agg_aulnay AS (
-        SELECT heure_aulnay AS heure, direction,
-            AVG(delta_aulnay)  AS delta_aulnay_min,
-            MAX(delta_aulnay)  AS max_delta_aulnay
-        FROM aulnay GROUP BY 1, 2
-    ),
-    agg_cdg1 AS (
-        SELECT heure_cdg1 AS heure, direction,
-            AVG(delta_cdg1)  AS delta_cdg1_min,
-            MAX(delta_cdg1)  AS max_delta_cdg1
-        FROM cdg1 GROUP BY 1, 2
-    ),
-    agg_vert_galant AS (
-        SELECT heure_vert_galant AS heure, direction,
-            AVG(delta_vert_galant)  AS delta_vert_galant_min,
-            MAX(delta_vert_galant)  AS max_delta_vert_galant
-        FROM vert_galant GROUP BY 1, 2
-    )
-
-    SELECT
-        COALESCE(s.heure, a.heure, b.heure, c.heure, au.heure, cdg.heure, vg.heure) AS heure,
-        COALESCE(s.direction, a.direction, b.direction, c.direction, au.direction, cdg.direction, vg.direction) AS direction,
-        s.delta_sceaux_min,         s.max_delta_sceaux,
-        a.delta_antony_min,         a.max_delta_antony,
-        b.delta_bourg_la_reine_min, b.max_delta_bourg_la_reine,
-        c.delta_chatelet_min,       c.max_delta_chatelet,
-        au.delta_aulnay_min,        au.max_delta_aulnay,
-        cdg.delta_cdg1_min,         cdg.max_delta_cdg1,
-        vg.delta_vert_galant_min,   vg.max_delta_vert_galant
-    FROM agg_chatelet  c
-        FULL OUTER JOIN agg_antony       a   ON c.heure = a.heure   AND c.direction = a.direction
-        FULL OUTER JOIN agg_bourg_la_reine b ON c.heure = b.heure   AND c.direction = b.direction
-        FULL OUTER JOIN agg_sceaux     s     ON c.heure = s.heure   AND c.direction = s.direction
-        FULL OUTER JOIN agg_aulnay       au  ON c.heure = au.heure  AND c.direction = au.direction
-        FULL OUTER JOIN agg_cdg1         cdg ON c.heure = cdg.heure AND c.direction = cdg.direction
-        FULL OUTER JOIN agg_vert_galant  vg  ON c.heure = vg.heure  AND c.direction = vg.direction
-    ORDER BY heure, direction
+delta_heure AS (
+    SELECT 
+        mission, direction,
+        EXTRACT(hour FROM sceaux::timestamp)             AS heure_sceaux,
+        LAG(sceaux) OVER (PARTITION BY direction ORDER BY sceaux)                       AS sceaux_precedent, sceaux,
+        EXTRACT(hour FROM antony::timestamp)             AS heure_antony,
+        LAG(antony) OVER (PARTITION BY direction ORDER BY antony)                       AS antony_precedent, antony,
+        EXTRACT(hour FROM bourg_la_reine::timestamp)     AS heure_bourg_la_reine,
+        LAG(bourg_la_reine) OVER (PARTITION BY direction ORDER BY bourg_la_reine)       AS bourg_la_reine_precedent, bourg_la_reine,
+        EXTRACT(hour FROM chatelet_les_halles::timestamp) AS heure_chatelet,
+        LAG(chatelet_les_halles) OVER (PARTITION BY direction ORDER BY chatelet_les_halles) AS chatelet_precedent, chatelet_les_halles,
+        EXTRACT(hour FROM aulnay_sous_bois::timestamp)   AS heure_aulnay,
+        LAG(aulnay_sous_bois) OVER (PARTITION BY direction ORDER BY aulnay_sous_bois)   AS aulnay_precedent, aulnay_sous_bois,
+        EXTRACT(hour FROM aeroport_cdg_1_rer::timestamp) AS heure_cdg1,
+        LAG(aeroport_cdg_1_rer) OVER (PARTITION BY direction ORDER BY aeroport_cdg_1_rer) AS cdg1_precedent, aeroport_cdg_1_rer,
+        EXTRACT(hour FROM vert_galant::timestamp)        AS heure_vert_galant,
+        LAG(vert_galant) OVER (PARTITION BY direction ORDER BY vert_galant)             AS vert_galant_precedent, vert_galant
+    FROM init
+    ORDER BY direction, chatelet_les_halles
+)
+SELECT
+    mission,
+    direction,
+    heure_sceaux             AS heure_re_sceaux,
+    ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER             AS delta_sceaux,
+    heure_antony             AS heure_re_antony,
+    ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER             AS delta_antony,
+    heure_bourg_la_reine     AS heure_re_bourg_la_reine,
+    ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine,
+    heure_chatelet           AS heure_re_chatelet,
+    ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER  AS delta_chatelet,
+    heure_aulnay             AS heure_re_aulnay,
+    ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER   AS delta_aulnay,
+    heure_cdg1               AS heure_re_cdg1,
+    ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER   AS delta_cdg1,
+    heure_vert_galant        AS heure_re_vert_galant,
+    ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER   AS delta_vert_galant
+FROM delta_heure;
 """
 
 
@@ -292,107 +129,238 @@ TABLE_HISTO_REG = "hist_moyenne_regularite"
 
 SQL_CREATION_HISTO_REG = f"""
     CREATE TABLE IF NOT EXISTS {TABLE_HISTO_REG} (
-        id                           SERIAL PRIMARY KEY,
-        date_observation             TIMESTAMP,
-        heure                        NUMERIC,
-        direction                    TEXT,
-        delta_sceaux_min_pct         FLOAT,
-        max_delta_sceaux_pct         FLOAT,
-        delta_antony_min_pct         FLOAT,
-        max_delta_antony_pct         FLOAT,
-        delta_bourg_la_reine_min_pct FLOAT,
-        max_delta_bourg_la_reine_pct FLOAT,
-        delta_chatelet_min_pct       FLOAT,
-        max_delta_chatelet_pct       FLOAT,
-        delta_aulnay_min_pct         FLOAT,
-        max_delta_aulnay_pct         FLOAT,
-        delta_cdg1_min_pct           FLOAT,
-        max_delta_cdg1_pct           FLOAT,
-        delta_vert_galant_min_pct    FLOAT,
-        max_delta_vert_galant_pct    FLOAT
+        date_observation                TIMESTAMP,
+        heure_th                        NUMERIC,
+        direction                       TEXT,
+        score_regularite_sceaux         INTEGER,
+        score_regularite_antony         INTEGER,
+        score_regularite_bourg_la_reine INTEGER,
+        score_regularite_chatelet       INTEGER,
+        score_regularite_aulnay         INTEGER,
+        score_regularite_cdg1           INTEGER,
+        score_regularite_vert_galant    INTEGER
     )
 """
 
+
 SQL_INSERTION_HISTO_REG = f"""
-    INSERT INTO {TABLE_HISTO_REG} (
-        date_observation,
-        heure, direction,
-        delta_sceaux_min_pct,         max_delta_sceaux_pct,
-        delta_antony_min_pct,         max_delta_antony_pct,
-        delta_bourg_la_reine_min_pct, max_delta_bourg_la_reine_pct,
-        delta_chatelet_min_pct,       max_delta_chatelet_pct,
-        delta_aulnay_min_pct,         max_delta_aulnay_pct,
-        delta_cdg1_min_pct,           max_delta_cdg1_pct,
-        delta_vert_galant_min_pct,    max_delta_vert_galant_pct
-    )
-    WITH joined AS (
-        SELECT
-            th.heure, th.direction,
-            th.delta_sceaux_min          AS th_delta_sceaux_min,
-            re.delta_sceaux_min          AS re_delta_sceaux_min,
-            th.max_delta_sceaux          AS th_max_delta_sceaux,
-            re.max_delta_sceaux          AS re_max_delta_sceaux,
-            th.delta_antony_min          AS th_delta_antony_min,
-            re.delta_antony_min          AS re_delta_antony_min,
-            th.max_delta_antony          AS th_max_delta_antony,
-            re.max_delta_antony          AS re_max_delta_antony,
-            th.delta_bourg_la_reine_min  AS th_delta_bourg_la_reine_min,
-            re.delta_bourg_la_reine_min  AS re_delta_bourg_la_reine_min,
-            th.max_delta_bourg_la_reine  AS th_max_delta_bourg_la_reine,
-            re.max_delta_bourg_la_reine  AS re_max_delta_bourg_la_reine,
-            th.delta_chatelet_min        AS th_delta_chatelet_min,
-            re.delta_chatelet_min        AS re_delta_chatelet_min,
-            th.max_delta_chatelet        AS th_max_delta_chatelet,
-            re.max_delta_chatelet        AS re_max_delta_chatelet,
-            th.delta_aulnay_min          AS th_delta_aulnay_min,
-            re.delta_aulnay_min          AS re_delta_aulnay_min,
-            th.max_delta_aulnay          AS th_max_delta_aulnay,
-            re.max_delta_aulnay          AS re_max_delta_aulnay,
-            th.delta_cdg1_min            AS th_delta_cdg1_min,
-            re.delta_cdg1_min            AS re_delta_cdg1_min,
-            th.max_delta_cdg1            AS th_max_delta_cdg1,
-            re.max_delta_cdg1            AS re_max_delta_cdg1,
-            th.delta_vert_galant_min     AS th_delta_vert_galant_min,
-            re.delta_vert_galant_min     AS re_delta_vert_galant_min,
-            th.max_delta_vert_galant     AS th_max_delta_vert_galant,
-            re.max_delta_vert_galant     AS re_max_delta_vert_galant
-        FROM regularite_theorique th
-        LEFT JOIN regularite_reelle re
-            ON  th.heure     = re.heure
-            AND th.direction = re.direction
-    ),
-    calculated AS (
-        SELECT
-            heure, direction,
-            (re_delta_sceaux_min         - th_delta_sceaux_min)         / NULLIF(th_delta_sceaux_min,         0) AS delta_sceaux_min_pct,
-            (re_max_delta_sceaux         - th_max_delta_sceaux)         / NULLIF(th_max_delta_sceaux,         0) AS max_delta_sceaux_pct,
-            (re_delta_antony_min         - th_delta_antony_min)         / NULLIF(th_delta_antony_min,         0) AS delta_antony_min_pct,
-            (re_max_delta_antony         - th_max_delta_antony)         / NULLIF(th_max_delta_antony,         0) AS max_delta_antony_pct,
-            (re_delta_bourg_la_reine_min - th_delta_bourg_la_reine_min) / NULLIF(th_delta_bourg_la_reine_min, 0) AS delta_bourg_la_reine_min_pct,
-            (re_max_delta_bourg_la_reine - th_max_delta_bourg_la_reine) / NULLIF(th_max_delta_bourg_la_reine, 0) AS max_delta_bourg_la_reine_pct,
-            (re_delta_chatelet_min       - th_delta_chatelet_min)       / NULLIF(th_delta_chatelet_min,       0) AS delta_chatelet_min_pct,
-            (re_max_delta_chatelet       - th_max_delta_chatelet)       / NULLIF(th_max_delta_chatelet,       0) AS max_delta_chatelet_pct,
-            (re_delta_aulnay_min         - th_delta_aulnay_min)         / NULLIF(th_delta_aulnay_min,         0) AS delta_aulnay_min_pct,
-            (re_max_delta_aulnay         - th_max_delta_aulnay)         / NULLIF(th_max_delta_aulnay,         0) AS max_delta_aulnay_pct,
-            (re_delta_cdg1_min           - th_delta_cdg1_min)           / NULLIF(th_delta_cdg1_min,           0) AS delta_cdg1_min_pct,
-            (re_max_delta_cdg1           - th_max_delta_cdg1)           / NULLIF(th_max_delta_cdg1,           0) AS max_delta_cdg1_pct,
-            (re_delta_vert_galant_min    - th_delta_vert_galant_min)    / NULLIF(th_delta_vert_galant_min,    0) AS delta_vert_galant_min_pct,
-            (re_max_delta_vert_galant    - th_max_delta_vert_galant)    / NULLIF(th_max_delta_vert_galant,    0) AS max_delta_vert_galant_pct
-        FROM joined
-    )
-    SELECT
-        NOW() AT TIME ZONE 'Europe/Paris' AS date_observation,
-        heure, direction,
-        delta_sceaux_min_pct,         max_delta_sceaux_pct,
-        delta_antony_min_pct,         max_delta_antony_pct,
-        delta_bourg_la_reine_min_pct, max_delta_bourg_la_reine_pct,
-        delta_chatelet_min_pct,       max_delta_chatelet_pct,
-        delta_aulnay_min_pct,         max_delta_aulnay_pct,
-        delta_cdg1_min_pct,           max_delta_cdg1_pct,
-        delta_vert_galant_min_pct,    max_delta_vert_galant_pct
-    FROM calculated c
-    WHERE heure = EXTRACT(HOUR FROM NOW() AT TIME ZONE 'Europe/Paris')
-    ORDER BY heure, direction
+    INSERT INTO {TABLE_HISTO_REG}
+-- ============================================================
+-- Régularité par tranche horaire et direction — toutes gares
+-- Format large : une colonne score par gare
+-- Filtre : heure théorique = heure courante (Europe/Paris)
+-- ============================================================
+
+WITH heure_courante AS (
+  SELECT EXTRACT(HOUR FROM NOW() AT TIME ZONE 'Europe/Paris') AS h
+),
+
+-- ── SCEAUX ──────────────────────────────────────────────────
+penalites_sceaux AS (
+  SELECT
+    th.heure_th_sceaux        AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_sceaux - th.delta_sceaux)::numeric / th.delta_sceaux
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_sceaux  IS NOT NULL
+    AND re.delta_sceaux  IS NOT NULL
+    AND th.delta_sceaux  > 0
+    AND th.heure_th_sceaux = (SELECT h FROM heure_courante)
+),
+score_sceaux AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_sceaux
+  FROM penalites_sceaux
+  GROUP BY heure_th, direction
+),
+
+-- ── ANTONY ──────────────────────────────────────────────────
+penalites_antony AS (
+  SELECT
+    th.heure_th_antony         AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_antony - th.delta_antony)::numeric / th.delta_antony
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_antony  IS NOT NULL
+    AND re.delta_antony  IS NOT NULL
+    AND th.delta_antony  > 0
+    AND th.heure_th_antony = (SELECT h FROM heure_courante)
+),
+score_antony AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_antony
+  FROM penalites_antony
+  GROUP BY heure_th, direction
+),
+
+-- ── BOURG-LA-REINE ──────────────────────────────────────────
+penalites_bourg_la_reine AS (
+  SELECT
+    th.heure_th_bourg_la_reine   AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_bourg_la_reine - th.delta_bourg_la_reine)::numeric / th.delta_bourg_la_reine
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_bourg_la_reine  IS NOT NULL
+    AND re.delta_bourg_la_reine  IS NOT NULL
+    AND th.delta_bourg_la_reine  > 0
+    AND th.heure_th_bourg_la_reine = (SELECT h FROM heure_courante)
+),
+score_bourg_la_reine AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_bourg_la_reine
+  FROM penalites_bourg_la_reine
+  GROUP BY heure_th, direction
+),
+
+-- ── CHATELET ────────────────────────────────────────────────
+penalites_chatelet AS (
+  SELECT
+    th.heure_th_chatelet       AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_chatelet - th.delta_chatelet)::numeric / th.delta_chatelet
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_chatelet  IS NOT NULL
+    AND re.delta_chatelet  IS NOT NULL
+    AND th.delta_chatelet  > 0
+    AND th.heure_th_chatelet = (SELECT h FROM heure_courante)
+),
+score_chatelet AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_chatelet
+  FROM penalites_chatelet
+  GROUP BY heure_th, direction
+),
+
+-- ── AULNAY ──────────────────────────────────────────────────
+penalites_aulnay AS (
+  SELECT
+    th.heure_th_aulnay         AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_aulnay - th.delta_aulnay)::numeric / th.delta_aulnay
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_aulnay  IS NOT NULL
+    AND re.delta_aulnay  IS NOT NULL
+    AND th.delta_aulnay  > 0
+    AND th.heure_th_aulnay = (SELECT h FROM heure_courante)
+),
+score_aulnay AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_aulnay
+  FROM penalites_aulnay
+  GROUP BY heure_th, direction
+),
+
+-- ── CDG1 ────────────────────────────────────────────────────
+penalites_cdg1 AS (
+  SELECT
+    th.heure_th_cdg1           AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_cdg1 - th.delta_cdg1)::numeric / th.delta_cdg1
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_cdg1  IS NOT NULL
+    AND re.delta_cdg1  IS NOT NULL
+    AND th.delta_cdg1  > 0
+    AND th.heure_th_cdg1 = (SELECT h FROM heure_courante)
+),
+score_cdg1 AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_cdg1
+  FROM penalites_cdg1
+  GROUP BY heure_th, direction
+),
+
+-- ── VERT-GALANT ─────────────────────────────────────────────
+penalites_vert_galant AS (
+  SELECT
+    th.heure_th_vert_galant    AS heure_th,
+    th.direction,
+    GREATEST(0.0,
+      (re.delta_vert_galant - th.delta_vert_galant)::numeric / th.delta_vert_galant
+    ) AS penalite
+  FROM regularite_theorique th
+  INNER JOIN regularite_reelle re ON th.mission = re.mission
+  WHERE th.delta_vert_galant  IS NOT NULL
+    AND re.delta_vert_galant  IS NOT NULL
+    AND th.delta_vert_galant  > 0
+    AND th.heure_th_vert_galant = (SELECT h FROM heure_courante)
+),
+score_vert_galant AS (
+  SELECT
+    heure_th,
+    direction,
+    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_vert_galant
+  FROM penalites_vert_galant
+  GROUP BY heure_th, direction
+),
+
+-- ── UNION des combinaisons (heure_th, direction) présentes ──
+all_keys AS (
+  SELECT heure_th, direction FROM score_sceaux
+  UNION
+  SELECT heure_th, direction FROM score_antony
+  UNION
+  SELECT heure_th, direction FROM score_bourg_la_reine
+  UNION
+  SELECT heure_th, direction FROM score_chatelet
+  UNION
+  SELECT heure_th, direction FROM score_aulnay
+  UNION
+  SELECT heure_th, direction FROM score_cdg1
+  UNION
+  SELECT heure_th, direction FROM score_vert_galant
+)
+
+-- ── RÉSULTAT FINAL (format large) ───────────────────────────
+SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation,
+  k.heure_th,
+  k.direction,
+  s.score_regularite_sceaux,
+  a.score_regularite_antony,
+  b.score_regularite_bourg_la_reine,
+  c.score_regularite_chatelet,
+  au.score_regularite_aulnay,
+  cd.score_regularite_cdg1,
+  vg.score_regularite_vert_galant
+FROM all_keys k
+LEFT JOIN score_sceaux          s  USING (heure_th, direction)
+LEFT JOIN score_antony          a  USING (heure_th, direction)
+LEFT JOIN score_bourg_la_reine  b  USING (heure_th, direction)
+LEFT JOIN score_chatelet        c  USING (heure_th, direction)
+LEFT JOIN score_aulnay          au USING (heure_th, direction)
+LEFT JOIN score_cdg1            cd USING (heure_th, direction)
+LEFT JOIN score_vert_galant     vg USING (heure_th, direction)
+ORDER BY k.heure_th, k.direction
+
 """
 
 
@@ -427,6 +395,7 @@ def reconstruire_table_reelle(engine: Engine) -> None:
 
 def creer_table_histo_regularite(engine: Engine) -> None:
     """Crée la table hist_moyenne_regularite si elle n'existe pas encore.
+
 
     Args:
         engine: Engine SQLAlchemy connecté à Postgres.

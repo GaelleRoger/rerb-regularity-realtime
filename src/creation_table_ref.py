@@ -19,7 +19,7 @@ SQL_CREATION_REF  = f"""
     WITH init AS (
         SELECT
             type_mission as code_mission,
-            (CASE WHEN SUBSTRING(type_mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction,
+            (CASE WHEN SUBSTRING(type_mission,1,1) IN ('E','I','J','O','Q','N','G') THEN 'Nord' ELSE 'Sud' END) AS direction,
             gare_depart,
             destination as gare_destination,
             nb_arrets_desservis,
@@ -41,7 +41,7 @@ SQL_CREATION_TMP = f"""
     WITH init AS (
         SELECT
             type_mission as code_mission,
-            (CASE WHEN SUBSTRING(type_mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction,
+            (CASE WHEN SUBSTRING(type_mission,1,1) IN ('E','I','J','O','Q','N','G') THEN 'Nord' ELSE 'Sud' END) AS direction,
             gare_depart, destination as gare_destination,
             nb_arrets_desservis,
             date_observation,
@@ -64,7 +64,7 @@ SQL_CREATION_BUFFER  = f"""
     CREATE TABLE {TABLE_BUFFER} AS
     WITH init as (select * from referentiel_missions),
     tmp as (SELECT code_mission as mission_tmp, 
-    (CASE WHEN SUBSTRING(code_mission,1,1) IN ('E','I','J','O','Q','N') THEN 'Nord' ELSE 'Sud' END) AS direction_tmp,
+    (CASE WHEN SUBSTRING(code_mission,1,1) IN ('E','I','J','O','Q','N','M','G') THEN 'Nord' ELSE 'Sud' END) AS direction_tmp,
     gare_depart as depart_tmp,
     gare_destination as destination_tmp, nb_arrets_mission as nb_tmp
     FROM referentiel_missions_tmp)
@@ -77,10 +77,14 @@ SQL_CREATION_BUFFER  = f"""
     FULL OUTER JOIN tmp
     ON init.code_mission = tmp.mission_tmp
 """
-
+# On remplit la table référentiel avec la mise à jour (+ corrections des bugs de destination)
 SQL_MAJ_REF = f"""
     CREATE TABLE {TABLE_REF} AS
-    SELECT *
+    SELECT DISTINCT code_mission, direction, gare_depart,
+		(CASE WHEN SUBSTRING(code_mission,1,1) = 'K' THEN 'Massy - Palaiseau'
+			  WHEN SUBSTRING(code_mission,1,1) = 'P' THEN 'Saint Rémy-lès-Chevreuse'
+			  ELSE gare_destination END) as gare_destination,
+		nb_arrets_mission
     FROM {TABLE_BUFFER}
 """
 

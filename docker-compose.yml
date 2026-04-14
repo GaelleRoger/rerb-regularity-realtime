@@ -110,6 +110,42 @@ services:
     networks:
       - db-network
 
+  # Interface Streamlit
+  streamlit:
+    build:
+      context: .
+      dockerfile: src/api/Dockerfile.streamlit
+    container_name: rerb-streamlit
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./src:/app/src
+    networks:
+      - db-network
+
+  # API FastAPI
+  api:
+    build:
+      context: .
+      dockerfile: src/api/Dockerfile
+    container_name: rerb-api
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PG_HOST: postgres
+      PYTHONPATH: /app/src
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./.env:/app/.env
+    networks:
+      - db-network
+
 volumes:
   postgres_data:
 

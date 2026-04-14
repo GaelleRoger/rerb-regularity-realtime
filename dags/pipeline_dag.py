@@ -29,7 +29,7 @@ dag = DAG(
     'regularite-rerb-realtime',
     default_args=default_args,
     description='Pipeline ETL',
-    schedule_interval='*/5 0-1,4-23 * * *',
+    schedule_interval='*/5 0,3-23 * * *',
     start_date=datetime(2026, 3, 30),
     catchup=False,
     tags=['postgres', 'pipeline', 'rerb'],
@@ -96,4 +96,6 @@ regularite_task_bash = BashOperator(
     dag=dag,
 )
 
-extract_task_bash >> load_task_bash >> referentiel_task_bash >> regularite_task_bash >> ecarts_task_bash >> allongement_task_bash
+extract_task_bash >> load_task_bash >> referentiel_task_bash >> [regularite_task_bash, ecarts_task_bash]
+
+ecarts_task_bash >> allongement_task_bash
