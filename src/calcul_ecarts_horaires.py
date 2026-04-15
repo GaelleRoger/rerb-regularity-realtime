@@ -165,6 +165,7 @@ def creer_table_histo_ecarts(engine: Engine) -> None:
             CASE WHEN ecart_max < 0 THEN 0 ELSE ecart_max END AS ecart_max
             FROM detail_ecarts_horaires
             WHERE ecart_max is not null
+            AND ecart_max < 30 --sécurité pour certaines missions en erreur
             )
             SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, direction, AVG(ecart_max) as ecart_moyen,
             percentile_cont(0.5) WITHIN GROUP (ORDER BY ecart_max) as ecart_median,
@@ -192,6 +193,7 @@ def charger_table_histo_ecarts(engine: Engine) -> None:
             CASE WHEN ecart_max < 0 THEN 0 ELSE ecart_max END AS ecart_max
             FROM detail_ecarts_horaires
             WHERE ecart_max is not null
+            AND ecart_max < 30 --sécurité pour certaines missions en erreur
             )
             SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation, direction, AVG(ecart_max) as ecart_moyen,
             percentile_cont(0.5) WITHIN GROUP (ORDER BY ecart_max) as ecart_median,

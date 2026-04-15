@@ -1,0 +1,31 @@
+code_mission,direction,gare_depart,gare_destination,nb_arrets_mission
+PIER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+IVIS,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,33
+EPAF,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+EMIR,Nord,Palaiseau - Villebon,Aéroport Charles de Gaulle 2 (Terminal 2),29
+KLEE,Sud,Villeparisis - Mitry-le-Neuf,Massy - Palaiseau,26
+USER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy-Palaiseau,28
+ELFE,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+ELOI,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+GUAD,Nord,Massy - Verrières,Aulnay-sous-Bois,22
+KLAC,Sud,Mitry - Claye,Massy - Palaiseau,27
+LORE,Sud,Aéroport CDG 1 (Terminal 3) - RER,Orsay-Ville,31
+IVAN,Nord,Le Guichet,Mitry - Claye,26
+STIN,Sud,Aéroport CDG 1 (Terminal 3) - RER,Robinson,24
+PLIC,Sud,Courcelle sur Yvette,Saint Rémy-lès-Chevreuse,1
+EAST,Nord,Aéroport CDG 1 (Terminal 3) - RER,Aéroport Charles de Gaulle 2 (Terminal 2),1
+PLAC,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,30
+SORI,Sud,Mitry - Claye,Robinson,24
+KFON,Sud,Mitry - Claye,Massy - Palaiseau,28
+PPIT,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,34
+EMMY,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),33
+LORD,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+GUIZ,Nord,Massy - Palaiseau,Aulnay-sous-Bois,23
+PAGE,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+KOCQ,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,29
+ULMS,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy-Palaiseau,20
+IDOR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,38
+PAUL,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+STRI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+IRUS,Nord,Massy - Palaiseau,Mitry - Claye,27
+PUMA,Sud,Le Guichet,Saint Rémy-lès-Chevreuse,6

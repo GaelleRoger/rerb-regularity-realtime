@@ -1,0 +1,17 @@
+code_mission,direction,gare_depart,gare_destination,nb_arrets_mission
+ELEC,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+ELOI,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+EMMA,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+EMUE,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+IJEL,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,35
+IJUR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,35
+IRMA,Nord,Massy - Palaiseau,Mitry - Claye,27
+IRON,Nord,Massy - Palaiseau,Mitry - Claye,27
+KERN,Sud,La Plaine Stade de France,Orsay-Ville,23
+LAZZ,Sud,La Plaine Stade de France,Orsay-Ville,22
+LOUP,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+LOVE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+PGAZ,Sud,Mitry - Claye,Saint-Rémy-lès-Chevreuse,32
+PGUY,Sud,Mitry - Claye,Saint-Rémy-lès-Chevreuse,32
+STAR,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+STOP,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25

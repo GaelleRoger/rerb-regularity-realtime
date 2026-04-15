@@ -7,7 +7,9 @@ SELECT * FROM hist_moyenne_allongement
 ORDER BY date_calcul DESC
 LIMIT 2;
 
-
+SELECT * FROM hist_moyenne_ecarts
+ORDER BY date_observation DESC
+LIMIT 2;
 
 
 
@@ -174,19 +176,19 @@ delta_heure AS (
 SELECT
     mission,
     direction,
-    heure_sceaux             AS heure_re_sceaux,
+    sceaux             AS heure_re_sceaux,
     ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER             AS delta_sceaux,
-    heure_antony             AS heure_re_antony,
+    antony             AS heure_re_antony,
     ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER             AS delta_antony,
-    heure_bourg_la_reine     AS heure_re_bourg_la_reine,
+    bourg_la_reine     AS heure_re_bourg_la_reine,
     ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine,
-    heure_chatelet           AS heure_re_chatelet,
+    chatelet_les_halles           AS heure_re_chatelet,
     ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER  AS delta_chatelet,
-    heure_aulnay             AS heure_re_aulnay,
+    aulnay_sous_bois             AS heure_re_aulnay,
     ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER   AS delta_aulnay,
-    heure_cdg1               AS heure_re_cdg1,
+    aeroport_cdg_1_rer               AS heure_re_cdg1,
     ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER   AS delta_cdg1,
-    heure_vert_galant        AS heure_re_vert_galant,
+    vert_galant        AS heure_re_vert_galant,
     ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER   AS delta_vert_galant
 FROM delta_heure;
 
