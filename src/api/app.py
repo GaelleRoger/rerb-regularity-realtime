@@ -12,6 +12,7 @@ La page se rafraîchit automatiquement toutes les 5 minutes via une balise
 <meta http-equiv="refresh">, cohérent avec la fréquence du pipeline Airflow.
 """
 
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -28,6 +29,10 @@ API_URL = "http://api:8000"
 
 # Couleur officielle de la ligne RER B
 RER_B_BLUE = "#0072BC"
+
+# Clé d'API pour l'authentification auprès de l'API FastAPI
+_API_KEY = os.environ.get("RERB_API_KEY", "")
+_HEADERS = {"X-API-Key": _API_KEY} if _API_KEY else {}
 
 # ── CONFIGURATION DE LA PAGE ──────────────────────────────────────────────────
 
@@ -72,7 +77,7 @@ def fetch(route: str):
         inaccessible ou retourne un statut non-200.
     """
     try:
-        r = requests.get(f"{API_URL}/{route}", timeout=5)
+        r = requests.get(f"{API_URL}/{route}", headers=_HEADERS, timeout=5)
         return r.json() if r.status_code == 200 else None
     except Exception:
         return None

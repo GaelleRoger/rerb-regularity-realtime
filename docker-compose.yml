@@ -119,6 +119,8 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+    environment:
+      RERB_API_KEY: ${RERB_API_KEY}
     ports:
       - "8501:8501"
     volumes:
@@ -138,6 +140,7 @@ services:
     environment:
       PG_HOST: postgres
       PYTHONPATH: /app/src
+      RERB_API_KEY: ${RERB_API_KEY}
     ports:
       - "8000:8000"
     volumes:
