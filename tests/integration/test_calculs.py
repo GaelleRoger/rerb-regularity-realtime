@@ -41,9 +41,8 @@ def test_table_regularite_existe(pg_engine):
 def test_colonnes_regularite(pg_engine):
     attendues = {
         "date_observation", "direction",
-        "score_regularite_sceaux", "score_regularite_antony",
-        "score_regularite_chatelet", "score_regularite_cdg1",
-        "score_regularite_vert_galant",
+        "score_sceaux", "score_antony", "score_bourg_la_reine",
+        "score_chatelet", "score_aulnay", "score_cdg1", "score_vert_galant",
     }
     presentes = colonnes_table(pg_engine, "hist_moyenne_regularite")
     manquantes = attendues - presentes
@@ -64,9 +63,8 @@ def test_direction_regularite_valeurs(pg_engine):
 def test_scores_regularite_dans_plage(pg_engine):
     """Tous les scores de régularité doivent être compris entre 0 et 100."""
     colonnes_scores = [
-        "score_regularite_sceaux", "score_regularite_antony",
-        "score_regularite_chatelet", "score_regularite_cdg1",
-        "score_regularite_vert_galant",
+        "score_sceaux", "score_antony", "score_bourg_la_reine",
+        "score_chatelet", "score_aulnay", "score_cdg1", "score_vert_galant",
     ]
     for col in colonnes_scores:
         with pg_engine.connect() as conn:

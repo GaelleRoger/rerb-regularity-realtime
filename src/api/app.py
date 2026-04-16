@@ -203,9 +203,9 @@ def score(field: str) -> int | None:
 # tc2 est la colonne centrale, laissée vide pour laisser de l'espace au plan
 tc1, tc2, tc3 = st.columns([2, 5, 2])
 with tc1:
-    st.markdown(score_card("Mitry-Claye", score("score_regularite_vert_galant")), unsafe_allow_html=True)
+    st.markdown(score_card("Mitry-Claye", score("score_vert_galant")), unsafe_allow_html=True)
 with tc3:
-    st.markdown(score_card("Saint-Rémy-lès-Ch.", score("score_regularite_antony")), unsafe_allow_html=True)
+    st.markdown(score_card("Saint-Rémy-lès-Ch.", score("score_antony")), unsafe_allow_html=True)
 
 # Plan de la ligne centré, avec marges latérales pour l'alignement visuel
 _, img_col, _ = st.columns([1, 8, 1])
@@ -216,11 +216,11 @@ with img_col:
 # et Saint-Rémy (droite)
 bc1, bc2, bc3 = st.columns([2, 5, 2])
 with bc1:
-    st.markdown(score_card("Aéroport CDG", score("score_regularite_cdg1")), unsafe_allow_html=True)
+    st.markdown(score_card("Aéroport CDG", score("score_cdg1")), unsafe_allow_html=True)
 with bc2:
-    st.markdown(score_card("Tronçon central", score("score_regularite_chatelet")), unsafe_allow_html=True)
+    st.markdown(score_card("Tronçon central", score("score_chatelet")), unsafe_allow_html=True)
 with bc3:
-    st.markdown(score_card("Robinson", score("score_regularite_sceaux")), unsafe_allow_html=True)
+    st.markdown(score_card("Robinson", score("score_sceaux")), unsafe_allow_html=True)
 
 # Horodatage de la dernière observation, ou message d'avertissement si aucune donnée
 if row:

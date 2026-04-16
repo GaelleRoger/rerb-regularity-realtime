@@ -28,20 +28,20 @@ _REGULARITE_ROWS = [
     {
         "date_observation": "2026-04-15T08:00:00",
         "direction": "Nord",
-        "score_regularite_sceaux": 90,
-        "score_regularite_antony": 85,
-        "score_regularite_chatelet": 78,
-        "score_regularite_cdg1": 92,
-        "score_regularite_vert_galant": 88,
+        "score_sceaux": 90,
+        "score_antony": 85,
+        "score_chatelet": 78,
+        "score_cdg1": 92,
+        "score_vert_galant": 88,
     },
     {
         "date_observation": "2026-04-15T08:00:00",
         "direction": "Sud",
-        "score_regularite_sceaux": 72,
-        "score_regularite_antony": 80,
-        "score_regularite_chatelet": 65,
-        "score_regularite_cdg1": 70,
-        "score_regularite_vert_galant": 75,
+        "score_sceaux": 72,
+        "score_antony": 80,
+        "score_chatelet": 65,
+        "score_cdg1": 70,
+        "score_vert_galant": 75,
     },
 ]
 
@@ -101,7 +101,7 @@ def test_regularite_contient_scores():
         response = client.get("/regularite")
 
     row = response.json()[0]
-    for champ in ("score_regularite_sceaux", "score_regularite_antony", "score_regularite_chatelet"):
+    for champ in ("score_sceaux", "score_antony", "score_chatelet"):
         assert champ in row, f"Champ manquant : {champ}"
 
 

@@ -16,7 +16,7 @@ SQL_RECONSTRUCTION = f"""
     DROP TABLE IF EXISTS {TABLE_CIBLE};
 
     CREATE TABLE {TABLE_CIBLE} AS
-    WITH init AS (
+WITH init AS (
     SELECT
         date_observation,
         MIN(date_observation) OVER (PARTITION BY mission) AS date_min,
@@ -28,19 +28,12 @@ SQL_RECONSTRUCTION = f"""
 delta AS (
     SELECT
         date_min, mission, direction,
-        EXTRACT(hour FROM sceaux::timestamp)              AS heure_sceaux,
         LAG(sceaux) OVER (PARTITION BY direction ORDER BY sceaux)                          AS sceaux_precedent, sceaux,
-        EXTRACT(hour FROM antony::timestamp)              AS heure_antony,
         LAG(antony) OVER (PARTITION BY direction ORDER BY antony)                          AS antony_precedent, antony,
-        EXTRACT(hour FROM bourg_la_reine::timestamp)      AS heure_bourg_la_reine,
         LAG(bourg_la_reine) OVER (PARTITION BY direction ORDER BY bourg_la_reine)          AS bourg_la_reine_precedent, bourg_la_reine,
-        EXTRACT(hour FROM chatelet_les_halles::timestamp) AS heure_chatelet,
         LAG(chatelet_les_halles) OVER (PARTITION BY direction ORDER BY chatelet_les_halles) AS chatelet_precedent, chatelet_les_halles,
-        EXTRACT(hour FROM aulnay_sous_bois::timestamp)    AS heure_aulnay,
         LAG(aulnay_sous_bois) OVER (PARTITION BY direction ORDER BY aulnay_sous_bois)      AS aulnay_precedent, aulnay_sous_bois,
-        EXTRACT(hour FROM aeroport_cdg_1_rer::timestamp)  AS heure_cdg1,
         LAG(aeroport_cdg_1_rer) OVER (PARTITION BY direction ORDER BY aeroport_cdg_1_rer)  AS cdg1_precedent, aeroport_cdg_1_rer,
-        EXTRACT(hour FROM vert_galant::timestamp)         AS heure_vert_galant,
         LAG(vert_galant) OVER (PARTITION BY direction ORDER BY vert_galant)                AS vert_galant_precedent, vert_galant
     FROM init
     WHERE date_observation = date_min
@@ -49,19 +42,19 @@ delta AS (
 SELECT
     mission,
     direction,
-    heure_sceaux             AS heure_th_sceaux,
+    sceaux             AS heure_th_sceaux,
     ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER             AS delta_sceaux,
-    heure_antony             AS heure_th_antony,
+    antony             AS heure_th_antony,
     ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER             AS delta_antony,
-    heure_bourg_la_reine     AS heure_th_bourg_la_reine,
+    bourg_la_reine     AS heure_th_bourg_la_reine,
     ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine,
-    heure_chatelet           AS heure_th_chatelet,
+    chatelet_les_halles           AS heure_th_chatelet,
     ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER  AS delta_chatelet,
-    heure_aulnay             AS heure_th_aulnay,
+    aulnay_sous_bois             AS heure_th_aulnay,
     ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER   AS delta_aulnay,
-    heure_cdg1               AS heure_th_cdg1,
+    aeroport_cdg_1_rer               AS heure_th_cdg1,
     ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER   AS delta_cdg1,
-    heure_vert_galant        AS heure_th_vert_galant,
+    vert_galant        AS heure_th_vert_galant,
     ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER   AS delta_vert_galant
 FROM delta;
 """
@@ -87,19 +80,12 @@ SQL_RECONSTRUCTION_REELLE = f"""
 delta_heure AS (
     SELECT 
         mission, direction,
-        EXTRACT(hour FROM sceaux::timestamp)             AS heure_sceaux,
         LAG(sceaux) OVER (PARTITION BY direction ORDER BY sceaux)                       AS sceaux_precedent, sceaux,
-        EXTRACT(hour FROM antony::timestamp)             AS heure_antony,
         LAG(antony) OVER (PARTITION BY direction ORDER BY antony)                       AS antony_precedent, antony,
-        EXTRACT(hour FROM bourg_la_reine::timestamp)     AS heure_bourg_la_reine,
         LAG(bourg_la_reine) OVER (PARTITION BY direction ORDER BY bourg_la_reine)       AS bourg_la_reine_precedent, bourg_la_reine,
-        EXTRACT(hour FROM chatelet_les_halles::timestamp) AS heure_chatelet,
         LAG(chatelet_les_halles) OVER (PARTITION BY direction ORDER BY chatelet_les_halles) AS chatelet_precedent, chatelet_les_halles,
-        EXTRACT(hour FROM aulnay_sous_bois::timestamp)   AS heure_aulnay,
         LAG(aulnay_sous_bois) OVER (PARTITION BY direction ORDER BY aulnay_sous_bois)   AS aulnay_precedent, aulnay_sous_bois,
-        EXTRACT(hour FROM aeroport_cdg_1_rer::timestamp) AS heure_cdg1,
         LAG(aeroport_cdg_1_rer) OVER (PARTITION BY direction ORDER BY aeroport_cdg_1_rer) AS cdg1_precedent, aeroport_cdg_1_rer,
-        EXTRACT(hour FROM vert_galant::timestamp)        AS heure_vert_galant,
         LAG(vert_galant) OVER (PARTITION BY direction ORDER BY vert_galant)             AS vert_galant_precedent, vert_galant
     FROM init
     ORDER BY direction, chatelet_les_halles
@@ -107,19 +93,19 @@ delta_heure AS (
 SELECT
     mission,
     direction,
-    heure_sceaux             AS heure_re_sceaux,
+    sceaux             AS heure_re_sceaux,
     ROUND(EXTRACT(EPOCH FROM (sceaux::timestamp - sceaux_precedent::timestamp)) / 60)::INTEGER             AS delta_sceaux,
-    heure_antony             AS heure_re_antony,
+    antony             AS heure_re_antony,
     ROUND(EXTRACT(EPOCH FROM (antony::timestamp - antony_precedent::timestamp)) / 60)::INTEGER             AS delta_antony,
-    heure_bourg_la_reine     AS heure_re_bourg_la_reine,
+    bourg_la_reine     AS heure_re_bourg_la_reine,
     ROUND(EXTRACT(EPOCH FROM (bourg_la_reine::timestamp - bourg_la_reine_precedent::timestamp)) / 60)::INTEGER AS delta_bourg_la_reine,
-    heure_chatelet           AS heure_re_chatelet,
+    chatelet_les_halles           AS heure_re_chatelet,
     ROUND(EXTRACT(EPOCH FROM (chatelet_les_halles::timestamp - chatelet_precedent::timestamp)) / 60)::INTEGER  AS delta_chatelet,
-    heure_aulnay             AS heure_re_aulnay,
+    aulnay_sous_bois             AS heure_re_aulnay,
     ROUND(EXTRACT(EPOCH FROM (aulnay_sous_bois::timestamp - aulnay_precedent::timestamp)) / 60)::INTEGER   AS delta_aulnay,
-    heure_cdg1               AS heure_re_cdg1,
+    aeroport_cdg_1_rer               AS heure_re_cdg1,
     ROUND(EXTRACT(EPOCH FROM (aeroport_cdg_1_rer::timestamp - cdg1_precedent::timestamp)) / 60)::INTEGER   AS delta_cdg1,
-    heure_vert_galant        AS heure_re_vert_galant,
+    vert_galant        AS heure_re_vert_galant,
     ROUND(EXTRACT(EPOCH FROM (vert_galant::timestamp - vert_galant_precedent::timestamp)) / 60)::INTEGER   AS delta_vert_galant
 FROM delta_heure;
 """
@@ -129,16 +115,15 @@ TABLE_HISTO_REG = "hist_moyenne_regularite"
 
 SQL_CREATION_HISTO_REG = f"""
     CREATE TABLE IF NOT EXISTS {TABLE_HISTO_REG} (
-        date_observation                TIMESTAMP,
-        heure_th                        NUMERIC,
-        direction                       TEXT,
-        score_regularite_sceaux         INTEGER,
-        score_regularite_antony         INTEGER,
-        score_regularite_bourg_la_reine INTEGER,
-        score_regularite_chatelet       INTEGER,
-        score_regularite_aulnay         INTEGER,
-        score_regularite_cdg1           INTEGER,
-        score_regularite_vert_galant    INTEGER
+        date_observation      TIMESTAMP,
+        direction             TEXT,
+        score_sceaux          INTEGER,
+        score_antony          INTEGER,
+        score_bourg_la_reine  INTEGER,
+        score_chatelet        INTEGER,
+        score_aulnay          INTEGER,
+        score_cdg1            INTEGER,
+        score_vert_galant     INTEGER
     )
 """
 
@@ -146,220 +131,229 @@ SQL_CREATION_HISTO_REG = f"""
 SQL_INSERTION_HISTO_REG = f"""
     INSERT INTO {TABLE_HISTO_REG}
 -- ============================================================
--- Régularité par tranche horaire et direction — toutes gares
--- Format large : une colonne score par gare
--- Filtre : heure théorique = heure courante (Europe/Paris)
+-- RÉGULARITÉ PAR ARRÊT ET DIRECTION — heure à venir (NOW → NOW+60min)
+-- Structure finale : arrêt | direction | score_regularite
 -- ============================================================
 
-WITH heure_courante AS (
-  SELECT EXTRACT(HOUR FROM NOW() AT TIME ZONE 'Europe/Paris') AS h
-),
+WITH
 
--- ── SCEAUX ──────────────────────────────────────────────────
-penalites_sceaux AS (
-  SELECT
-    th.heure_th_sceaux        AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_sceaux - th.delta_sceaux)::numeric / th.delta_sceaux
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_sceaux  IS NOT NULL
-    AND re.delta_sceaux  IS NOT NULL
-    AND th.delta_sceaux  > 0
-    AND th.heure_th_sceaux = (SELECT h FROM heure_courante)
+-- ======================== SCEAUX ========================
+th_sceaux AS (
+    SELECT mission, delta_sceaux AS delta_th
+    FROM regularite_theorique
+    WHERE delta_sceaux IS NOT NULL
+),
+re_sceaux AS (
+    SELECT mission, direction, heure_re_sceaux, delta_sceaux AS delta_re
+    FROM regularite_reelle
+    WHERE delta_sceaux IS NOT NULL
+      AND heure_re_sceaux::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                          AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_sceaux AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_sceaux r
+    INNER JOIN th_sceaux t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_sceaux AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_sceaux
-  FROM penalites_sceaux
-  GROUP BY heure_th, direction
+    SELECT
+        'sceaux'                                               AS arret,
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_sceaux
+    GROUP BY direction
 ),
 
--- ── ANTONY ──────────────────────────────────────────────────
-penalites_antony AS (
-  SELECT
-    th.heure_th_antony         AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_antony - th.delta_antony)::numeric / th.delta_antony
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_antony  IS NOT NULL
-    AND re.delta_antony  IS NOT NULL
-    AND th.delta_antony  > 0
-    AND th.heure_th_antony = (SELECT h FROM heure_courante)
+-- ======================== ANTONY ========================
+th_antony AS (
+    SELECT mission, delta_antony AS delta_th
+    FROM regularite_theorique
+    WHERE delta_antony IS NOT NULL
+),
+re_antony AS (
+    SELECT mission, direction, heure_re_antony, delta_antony AS delta_re
+    FROM regularite_reelle
+    WHERE delta_antony IS NOT NULL
+      AND heure_re_antony::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                          AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_antony AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_antony r
+    INNER JOIN th_antony t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_antony AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_antony
-  FROM penalites_antony
-  GROUP BY heure_th, direction
+    SELECT
+        'antony'                                               AS arret,
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_antony
+    GROUP BY direction
 ),
 
--- ── BOURG-LA-REINE ──────────────────────────────────────────
-penalites_bourg_la_reine AS (
-  SELECT
-    th.heure_th_bourg_la_reine   AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_bourg_la_reine - th.delta_bourg_la_reine)::numeric / th.delta_bourg_la_reine
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_bourg_la_reine  IS NOT NULL
-    AND re.delta_bourg_la_reine  IS NOT NULL
-    AND th.delta_bourg_la_reine  > 0
-    AND th.heure_th_bourg_la_reine = (SELECT h FROM heure_courante)
+-- =================== BOURG_LA_REINE ===================
+th_bourg_la_reine AS (
+    SELECT mission, delta_bourg_la_reine AS delta_th
+    FROM regularite_theorique
+    WHERE delta_bourg_la_reine IS NOT NULL
+),
+re_bourg_la_reine AS (
+    SELECT mission, direction, heure_re_bourg_la_reine, delta_bourg_la_reine AS delta_re
+    FROM regularite_reelle
+    WHERE delta_bourg_la_reine IS NOT NULL
+      AND heure_re_bourg_la_reine::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                                  AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_bourg_la_reine AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_bourg_la_reine r
+    INNER JOIN th_bourg_la_reine t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_bourg_la_reine AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_bourg_la_reine
-  FROM penalites_bourg_la_reine
-  GROUP BY heure_th, direction
+    SELECT
+        'bourg_la_reine'                                       AS arret,
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_bourg_la_reine
+    GROUP BY direction
 ),
 
--- ── CHATELET ────────────────────────────────────────────────
-penalites_chatelet AS (
-  SELECT
-    th.heure_th_chatelet       AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_chatelet - th.delta_chatelet)::numeric / th.delta_chatelet
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_chatelet  IS NOT NULL
-    AND re.delta_chatelet  IS NOT NULL
-    AND th.delta_chatelet  > 0
-    AND th.heure_th_chatelet = (SELECT h FROM heure_courante)
+-- ======================== CHATELET ========================
+th_chatelet AS (
+    SELECT mission, delta_chatelet AS delta_th
+    FROM regularite_theorique
+    WHERE delta_chatelet IS NOT NULL
+),
+re_chatelet AS (
+    SELECT mission, direction, heure_re_chatelet, delta_chatelet AS delta_re
+    FROM regularite_reelle
+    WHERE delta_chatelet IS NOT NULL
+      AND heure_re_chatelet::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                           AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_chatelet AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_chatelet r
+    INNER JOIN th_chatelet t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_chatelet AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_chatelet
-  FROM penalites_chatelet
-  GROUP BY heure_th, direction
+    SELECT
+        'chatelet'                                             AS arret,
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_chatelet
+    GROUP BY direction
 ),
 
--- ── AULNAY ──────────────────────────────────────────────────
-penalites_aulnay AS (
-  SELECT
-    th.heure_th_aulnay         AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_aulnay - th.delta_aulnay)::numeric / th.delta_aulnay
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_aulnay  IS NOT NULL
-    AND re.delta_aulnay  IS NOT NULL
-    AND th.delta_aulnay  > 0
-    AND th.heure_th_aulnay = (SELECT h FROM heure_courante)
+-- ======================== AULNAY ========================
+th_aulnay AS (
+    SELECT mission, delta_aulnay AS delta_th
+    FROM regularite_theorique
+    WHERE delta_aulnay IS NOT NULL
+),
+re_aulnay AS (
+    SELECT mission, direction, heure_re_aulnay, delta_aulnay AS delta_re
+    FROM regularite_reelle
+    WHERE delta_aulnay IS NOT NULL
+      AND heure_re_aulnay::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                          AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_aulnay AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_aulnay r
+    INNER JOIN th_aulnay t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_aulnay AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_aulnay
-  FROM penalites_aulnay
-  GROUP BY heure_th, direction
+    SELECT
+        'aulnay'                                               AS arret,
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_aulnay
+    GROUP BY direction
 ),
 
--- ── CDG1 ────────────────────────────────────────────────────
-penalites_cdg1 AS (
-  SELECT
-    th.heure_th_cdg1           AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_cdg1 - th.delta_cdg1)::numeric / th.delta_cdg1
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_cdg1  IS NOT NULL
-    AND re.delta_cdg1  IS NOT NULL
-    AND th.delta_cdg1  > 0
-    AND th.heure_th_cdg1 = (SELECT h FROM heure_courante)
+-- ======================== CDG1 ========================
+th_cdg1 AS (
+    SELECT mission, delta_cdg1 AS delta_th
+    FROM regularite_theorique
+    WHERE delta_cdg1 IS NOT NULL
+),
+re_cdg1 AS (
+    SELECT mission, direction, heure_re_cdg1, delta_cdg1 AS delta_re
+    FROM regularite_reelle
+    WHERE delta_cdg1 IS NOT NULL
+      AND heure_re_cdg1::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                        AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_cdg1 AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_cdg1 r
+    INNER JOIN th_cdg1 t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_cdg1 AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_cdg1
-  FROM penalites_cdg1
-  GROUP BY heure_th, direction
+    SELECT
+        'cdg1'                                                 AS arret,
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_cdg1
+    GROUP BY direction
 ),
 
--- ── VERT-GALANT ─────────────────────────────────────────────
-penalites_vert_galant AS (
-  SELECT
-    th.heure_th_vert_galant    AS heure_th,
-    th.direction,
-    GREATEST(0.0,
-      (re.delta_vert_galant - th.delta_vert_galant)::numeric / th.delta_vert_galant
-    ) AS penalite
-  FROM regularite_theorique th
-  INNER JOIN regularite_reelle re ON th.mission = re.mission
-  WHERE th.delta_vert_galant  IS NOT NULL
-    AND re.delta_vert_galant  IS NOT NULL
-    AND th.delta_vert_galant  > 0
-    AND th.heure_th_vert_galant = (SELECT h FROM heure_courante)
+-- ====================== VERT_GALANT ======================
+th_vert_galant AS (
+    SELECT mission, delta_vert_galant AS delta_th
+    FROM regularite_theorique
+    WHERE delta_vert_galant IS NOT NULL
+),
+re_vert_galant AS (
+    SELECT mission, direction, heure_re_vert_galant, delta_vert_galant AS delta_re
+    FROM regularite_reelle
+    WHERE delta_vert_galant IS NOT NULL
+      AND heure_re_vert_galant::timestamp BETWEEN (NOW() AT TIME ZONE 'Europe/Paris')
+                                              AND (NOW() AT TIME ZONE 'Europe/Paris' + INTERVAL '60 minutes')
+),
+join_vert_galant AS (
+    SELECT r.direction, r.delta_re, t.delta_th
+    FROM re_vert_galant r
+    INNER JOIN th_vert_galant t ON t.mission = r.mission
+    WHERE r.delta_re IS NOT NULL AND t.delta_th IS NOT NULL AND t.delta_th > 0
 ),
 score_vert_galant AS (
-  SELECT
-    heure_th,
-    direction,
-    GREATEST(0, ROUND((1 - AVG(penalite)) * 100)) AS score_regularite_vert_galant
-  FROM penalites_vert_galant
-  GROUP BY heure_th, direction
-),
-
--- ── UNION des combinaisons (heure_th, direction) présentes ──
-all_keys AS (
-  SELECT heure_th, direction FROM score_sceaux
-  UNION
-  SELECT heure_th, direction FROM score_antony
-  UNION
-  SELECT heure_th, direction FROM score_bourg_la_reine
-  UNION
-  SELECT heure_th, direction FROM score_chatelet
-  UNION
-  SELECT heure_th, direction FROM score_aulnay
-  UNION
-  SELECT heure_th, direction FROM score_cdg1
-  UNION
-  SELECT heure_th, direction FROM score_vert_galant
+    SELECT
+        direction,
+        GREATEST(0, ROUND((1 - AVG(GREATEST(0.0, (delta_re - delta_th)::numeric / delta_th))) * 100)) AS score_regularite
+    FROM join_vert_galant
+    GROUP BY direction
 )
 
--- ── RÉSULTAT FINAL (format large) ───────────────────────────
-SELECT NOW() AT TIME ZONE 'Europe/Paris' as date_observation,
-  k.heure_th,
-  k.direction,
-  s.score_regularite_sceaux,
-  a.score_regularite_antony,
-  b.score_regularite_bourg_la_reine,
-  c.score_regularite_chatelet,
-  au.score_regularite_aulnay,
-  cd.score_regularite_cdg1,
-  vg.score_regularite_vert_galant
-FROM all_keys k
-LEFT JOIN score_sceaux          s  USING (heure_th, direction)
-LEFT JOIN score_antony          a  USING (heure_th, direction)
-LEFT JOIN score_bourg_la_reine  b  USING (heure_th, direction)
-LEFT JOIN score_chatelet        c  USING (heure_th, direction)
-LEFT JOIN score_aulnay          au USING (heure_th, direction)
-LEFT JOIN score_cdg1            cd USING (heure_th, direction)
-LEFT JOIN score_vert_galant     vg USING (heure_th, direction)
-ORDER BY k.heure_th, k.direction
+-- ==================== TABLE FINALE (PIVOT) ====================
+SELECT
+    NOW() AT TIME ZONE 'Europe/Paris'      AS date_observation,
+    COALESCE(
+        s.direction, a.direction, blr.direction,
+        c.direction, au.direction, cd.direction, vg.direction
+    )                                      AS direction,
+    s.score_regularite                     AS score_sceaux,
+    a.score_regularite                     AS score_antony,
+    blr.score_regularite                   AS score_bourg_la_reine,
+    c.score_regularite                     AS score_chatelet,
+    au.score_regularite                    AS score_aulnay,
+    cd.score_regularite                    AS score_cdg1,
+    vg.score_regularite                    AS score_vert_galant
+FROM      score_sceaux         s
+FULL JOIN score_antony          a   USING (direction)
+FULL JOIN score_bourg_la_reine blr USING (direction)
+FULL JOIN score_chatelet        c   USING (direction)
+FULL JOIN score_aulnay          au  USING (direction)
+FULL JOIN score_cdg1            cd  USING (direction)
+FULL JOIN score_vert_galant     vg  USING (direction)
+ORDER BY direction
 
 """
 
