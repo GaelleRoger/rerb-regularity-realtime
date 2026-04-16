@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +21,12 @@ TABLE_LOG = "fichiers_charges"
 PREFIXES = ["horaires_theoriques", "horaires_reels"]
 
 COLONNES_META = ["type_mission", "destination", "gare_depart", "nb_arrets_desservis"]
+
+# Colonnes non-horaires exclues du calcul de l'heure de terminus
+_COLONNES_NON_HORAIRES = {
+    "mission", "type_mission", "destination",
+    "gare_depart", "nb_arrets_desservis", "date_observation",
+}
 
 
 def normaliser_nom_colonne(nom: str) -> str:
@@ -133,6 +140,12 @@ def charger_csv_en_base(
 
     Insère les données en mode append (la table existante est conservée).
     Les colonnes listées dans colonnes_a_exclure sont retirées avant insertion.
+    Deux filtres sont appliqués avant insertion :
+    - Les lignes dont le code mission commence par 'RATP' sont supprimées car
+      elles sont toujours des doublons des lignes correctes (ex : RATPLORE90
+      est un doublon de LORE90).
+    - Les lignes dont l'heure de passage maximale (toutes gares) est antérieure
+      à l'heure courante sont supprimées : la mission est terminée.
 
     Args:
         engine: Engine SQLAlchemy connecté à Postgres.
@@ -149,6 +162,24 @@ def charger_csv_en_base(
     colonnes_presentes = [c for c in colonnes_a_exclure if c in df.columns]
     df = df.drop(columns=colonnes_presentes)
     df = df.rename(columns=normaliser_nom_colonne)
+    if "mission" in df.columns:
+        masque_ratp = df["mission"].astype(str).str.startswith("RATP")
+        nb_ratp = masque_ratp.sum()
+        if nb_ratp > 0:
+            print(f"[FILTRE] {nb_ratp} ligne(s) RATP supprimée(s) : {chemin.name}")
+        df = df[~masque_ratp]
+    colonnes_horaires = [c for c in df.columns if c not in _COLONNES_NON_HORAIRES]
+    if colonnes_horaires:
+        heures = df[colonnes_horaires].apply(
+            pd.to_datetime, errors="coerce", utc=True, format="mixed"
+        )
+        heure_terminus = heures.max(axis=1)
+        maintenant = datetime.now(tz=timezone.utc)
+        masque_termine = heure_terminus.notna() & (heure_terminus < maintenant)
+        nb_termine = int(masque_termine.sum())
+        if nb_termine > 0:
+            print(f"[FILTRE] {nb_termine} mission(s) terminée(s) supprimée(s) : {chemin.name}")
+        df = df[~masque_termine]
     df.to_sql(table, engine, if_exists="append", index=False)
     print(f"Chargé ({len(df)} lignes) : {chemin.name} → {table}")
 

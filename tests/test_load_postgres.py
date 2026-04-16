@@ -6,6 +6,7 @@ Couvre :
 - trouver_dernier_csv()    : sélection du CSV le plus récent dans un dossier
 - est_deja_charge()        : consultation de la table de log (SQLite en mémoire)
 - enregistrer_fichier()    : insertion dans la table de log (SQLite en mémoire)
+- charger_csv_en_base()    : filtre des lignes RATP avant insertion
 
 Les tests de base de données utilisent un engine SQLite en mémoire pour
 ne pas dépendre d'une instance Postgres active.
@@ -14,10 +15,12 @@ ne pas dépendre d'une instance Postgres active.
 import time
 from unittest.mock import patch
 
+import pandas as pd
 import pytest
 from sqlalchemy import create_engine, text
 
 from load_postgres import (
+    charger_csv_en_base,
     enregistrer_fichier,
     est_deja_charge,
     normaliser_nom_colonne,
@@ -149,3 +152,132 @@ def test_est_deja_charge_distincts(engine_sqlite):
     enregistrer_fichier(engine_sqlite, nom_a)
     assert est_deja_charge(engine_sqlite, nom_a) is True
     assert est_deja_charge(engine_sqlite, nom_b) is False
+
+
+# ── charger_csv_en_base — filtre RATP ────────────────────────────────────────
+
+@pytest.fixture
+def engine_table(engine_sqlite):
+    """Engine SQLite avec une table cible pour les tests d'insertion."""
+    with engine_sqlite.begin() as conn:
+        conn.execute(text("CREATE TABLE horaires_test (mission TEXT)"))
+    return engine_sqlite
+
+
+def test_filtre_ratp_supprime_doublons(tmp_path, engine_table):
+    """Les lignes dont la mission commence par RATP doivent être supprimées."""
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text("mission\nLORE90\nRATOPAL72\nKALI72\nRATPLORE90\n", encoding="utf-8")
+
+    charger_csv_en_base(engine_table, csv, "horaires_test", colonnes_a_exclure=[])
+
+    with engine_table.connect() as conn:
+        rows = conn.execute(text("SELECT mission FROM horaires_test")).fetchall()
+    missions = [r[0] for r in rows]
+    assert "RATPOPAL72" not in missions
+    assert "RATPLORE90" not in missions
+    assert "LORE90" in missions
+    assert "KALI72" in missions
+
+
+def test_filtre_ratp_conserve_lignes_correctes(tmp_path, engine_table):
+    """Une mission sans préfixe RATP doit être insérée normalement."""
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text("mission\nBIPA84\nELYS66\n", encoding="utf-8")
+
+    charger_csv_en_base(engine_table, csv, "horaires_test", colonnes_a_exclure=[])
+
+    with engine_table.connect() as conn:
+        count = conn.execute(text("SELECT COUNT(*) FROM horaires_test")).scalar()
+    assert count == 2
+
+
+def test_filtre_ratp_sans_colonne_mission(tmp_path, engine_sqlite):
+    """Le filtre RATP ne doit pas lever d'exception si la colonne mission est absente."""
+    with engine_sqlite.begin() as conn:
+        conn.execute(text("CREATE TABLE slim_test (gare TEXT)"))
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text("gare\nChatelet\nAntony\n", encoding="utf-8")
+
+    # Ne doit pas lever d'exception
+    charger_csv_en_base(engine_sqlite, csv, "slim_test", colonnes_a_exclure=[])
+
+
+# ── charger_csv_en_base — filtre missions terminées ──────────────────────────
+
+@pytest.fixture
+def engine_missions(engine_sqlite):
+    """Engine SQLite avec une table mission+gare pour les tests de terminus."""
+    with engine_sqlite.begin() as conn:
+        conn.execute(text("CREATE TABLE horaires_terminus (mission TEXT, chatelet TEXT)"))
+    return engine_sqlite
+
+
+def test_filtre_terminus_supprime_mission_terminee(tmp_path, engine_missions):
+    """Une mission dont tous les passages sont dans le passé doit être supprimée."""
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text(
+        "mission,chatelet\n"
+        "LORE90,2000-01-01T08:00:00+00:00\n"   # passé lointain → supprimée
+        "KALI72,2099-12-31T23:00:00+00:00\n",  # futur → conservée
+        encoding="utf-8",
+    )
+
+    charger_csv_en_base(engine_missions, csv, "horaires_terminus", colonnes_a_exclure=[])
+
+    with engine_missions.connect() as conn:
+        rows = conn.execute(text("SELECT mission FROM horaires_terminus")).fetchall()
+    missions = [r[0] for r in rows]
+    assert "LORE90" not in missions
+    assert "KALI72" in missions
+
+
+def test_filtre_terminus_conserve_mission_en_cours(tmp_path, engine_missions):
+    """Une mission dont le terminus est dans le futur doit être conservée."""
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text(
+        "mission,chatelet\n"
+        "BIPA84,2099-12-31T23:00:00+00:00\n",
+        encoding="utf-8",
+    )
+
+    charger_csv_en_base(engine_missions, csv, "horaires_terminus", colonnes_a_exclure=[])
+
+    with engine_missions.connect() as conn:
+        count = conn.execute(text("SELECT COUNT(*) FROM horaires_terminus")).scalar()
+    assert count == 1
+
+
+def test_filtre_terminus_sans_heure_valide_conserve_ligne(tmp_path, engine_missions):
+    """Une ligne sans aucune heure parseable ne doit pas être supprimée."""
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text(
+        "mission,chatelet\n"
+        "ELYS66,\n",  # colonne horaire vide → NaT → conservée
+        encoding="utf-8",
+    )
+
+    charger_csv_en_base(engine_missions, csv, "horaires_terminus", colonnes_a_exclure=[])
+
+    with engine_missions.connect() as conn:
+        count = conn.execute(text("SELECT COUNT(*) FROM horaires_terminus")).scalar()
+    assert count == 1
+
+
+def test_filtres_ratp_et_terminus_combines(tmp_path, engine_missions):
+    """Les deux filtres (RATP + terminus) s'appliquent indépendamment."""
+    csv = tmp_path / "horaires_theoriques_20260415_120000.csv"
+    csv.write_text(
+        "mission,chatelet\n"
+        "RATPLORE90,2099-12-31T23:00:00+00:00\n"  # RATP → supprimée
+        "LORE90,2000-01-01T08:00:00+00:00\n"       # terminée → supprimée
+        "KALI72,2099-12-31T23:00:00+00:00\n",      # valide → conservée
+        encoding="utf-8",
+    )
+
+    charger_csv_en_base(engine_missions, csv, "horaires_terminus", colonnes_a_exclure=[])
+
+    with engine_missions.connect() as conn:
+        rows = conn.execute(text("SELECT mission FROM horaires_terminus")).fetchall()
+    missions = [r[0] for r in rows]
+    assert missions == ["KALI72"]
