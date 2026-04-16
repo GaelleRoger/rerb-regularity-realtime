@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: Tests unitaires
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installation de uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Installation de Python 3.12
+        run: uv python install 3.12
+
+      - name: Installation des dépendances
+        run: uv sync --extra dev
+
+      - name: Lancement des tests unitaires
+        run: uv run pytest --tb=short

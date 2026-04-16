@@ -1,0 +1,102 @@
+code_mission,direction,gare_depart,gare_destination,nb_arrets_mission
+USER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Laplace,28
+EGRE,Nord,Laplace,Aéroport Charles de Gaulle 2 (Terminal 2),19
+MITA,Nord,Robinson,Châtelet Les Halles,13
+ENNE,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),35
+PIER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+IVIS,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,33
+ILUS,Nord,Robinson,Mitry - Claye,24
+AIZZ,Sud,Mitry - Claye,Paris Gare du Nord,10
+INKE,Nord,Massy - Palaiseau,Mitry - Claye,28
+KARI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+KNUT,Sud,Châtelet les Halles,Massy - Palaiseau,17
+KASE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+EFOR,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),26
+OROC,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 1 (Terminal 3),20
+PILE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+SOME,Sud,Mitry - Claye,Robinson,24
+PYRE,Sud,Châtelet les Halles,Saint Rémy-lès-Chevreuse,23
+AEZZ,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Paris Gare du Nord,11
+RATP,Sud,Arcueil - Cachan,Massy-Palaiseau,8
+IRMA,Nord,Massy - Palaiseau,Mitry - Claye,27
+EPAF,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+EPIN,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+ULMS,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Laplace,20
+IRON,Nord,Massy - Palaiseau,Mitry - Claye,27
+LOUP,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+ILOT,Nord,Robinson,Mitry - Claye,24
+ERSE,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),21
+PEPE,Sud,Châtelet les Halles,Saint Rémy-lès-Chevreuse,19
+ILTA,Nord,Robinson,Mitry - Claye,24
+IJEL,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,31
+KENT,Sud,La Plaine Stade de France,Massy - Palaiseau,18
+KANE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+EDME,Nord,Denfert-Rochereau,Aéroport Charles de Gaulle 2 (Terminal 2),8
+LORE,Sud,Parc des Expositions,Orsay-Ville,30
+ELOI,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+ELEC,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+ERTE,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),21
+KLAC,Sud,Mitry - Claye,Massy - Palaiseau,27
+KALI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+PAUL,Sud,Vert Galant,Saint Rémy-lès-Chevreuse,29
+ILOU,Nord,Robinson,Mitry - Claye,24
+HKZZ,Sud,Les Baconnets,Bourg-la-Reine,5
+ICOR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,30
+JANO,Nord,Aéroport Charles de Gaulle 2 (Terminal 2),Denfert Rochereau,8
+SCAL,Sud,Châtelet les Halles,Robinson,13
+ECCI,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),29
+MTOU,Nord,Massy - Palaiseau,Châtelet Les Halles,13
+KERN,Sud,La Plaine Stade de France,Massy - Palaiseau,18
+ERIO,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),21
+JLZZ,Nord,Orsay Ville,Denfert Rochereau,10
+PLAC,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,30
+SORI,Sud,Mitry - Claye,Robinson,24
+GUAD,Nord,Parc de Sceaux,Aulnay-sous-Bois,18
+IVAN,Nord,Antony,Mitry - Claye,23
+STIN,Sud,Sevran Beaudottes,Robinson,21
+STAR,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+EPOI,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+KAPE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+SOSO,Sud,Mitry - Claye,Robinson,24
+PINA,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+PGUY,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,32
+ERIC,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),21
+PIED,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+EPAU,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+KFON,Sud,Mitry - Claye,Massy - Palaiseau,28
+OZIP,Nord,Robinson,Aéroport Charles de Gaulle 1 (Terminal 3),16
+PPIT,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,34
+EMMY,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),33
+LJZZ,Sud,Cité Universitaire,Orsay-Ville,13
+SOUS,Sud,Mitry - Claye,Robinson,24
+MENE,Nord,Saint-Rémy-lès-Chevreuse,Châtelet Les Halles,23
+EMUE,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+ETOU,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),25
+LORD,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+KDIT,Sud,Châtelet les Halles,Massy - Palaiseau,13
+GUIZ,Nord,Massy - Palaiseau,Aulnay-sous-Bois,23
+LOVE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+PUMA,Sud,Courcelle sur Yvette,Saint Rémy-lès-Chevreuse,1
+PQUL,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+PIGE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+PAGE,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+KOCQ,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,29
+ILAN,Nord,Robinson,Mitry - Claye,24
+EMIR,Nord,Fontaine Michalon,Aéroport Charles de Gaulle 2 (Terminal 2),25
+EMMA,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+PGAZ,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,32
+PIST,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+EPLA,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+STOP,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+EROC,Nord,Massy - Palaiseau,Aéroport Charles de Gaulle 2 (Terminal 2),21
+IDOR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,38
+ELFE,Nord,Bourg-la-Reine,Aéroport Charles de Gaulle 2 (Terminal 2),22
+POIN,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,35
+IGZZ,Nord,Aulnay-sous-Bois,Mitry - Claye,4
+SOLE,Sud,Mitry - Claye,Robinson,24
+STRI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+IALE,Nord,Laplace,Mitry - Claye,18
+IJUR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,31
+IRUS,Nord,Massy - Palaiseau,Mitry - Claye,27
+KLEE,Sud,Aulnay-sous-Bois,Massy - Palaiseau,23
+PILO,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31

@@ -83,6 +83,7 @@ SQL_MAJ_REF = f"""
     SELECT DISTINCT code_mission, direction, gare_depart,
 		(CASE WHEN SUBSTRING(code_mission,1,1) = 'K' THEN 'Massy - Palaiseau'
 			  WHEN SUBSTRING(code_mission,1,1) = 'P' THEN 'Saint Rémy-lès-Chevreuse'
+              WHEN SUBSTRING(code_mission,1,1) = 'U' THEN 'Laplace'
 			  ELSE gare_destination END) as gare_destination,
 		nb_arrets_mission
     FROM {TABLE_BUFFER}
