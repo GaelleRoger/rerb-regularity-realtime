@@ -1,0 +1,29 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Installation de cron
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cron \
+    && rm -rf /var/lib/apt/lists/*
+
+# Dépendances Python du pipeline
+RUN pip install --no-cache-dir \
+    numpy \
+    pandas \
+    psycopg2-binary \
+    python-dotenv \
+    requests \
+    sqlalchemy
+
+# Scripts shell
+COPY docker/scripts/pipeline.sh /scripts/pipeline.sh
+COPY docker/scripts/reset.sh    /scripts/reset.sh
+RUN chmod +x /scripts/pipeline.sh /scripts/reset.sh
+
+# Crontab
+COPY docker/crontab /etc/cron.d/rerb-cron
+RUN chmod 0644 /etc/cron.d/rerb-cron && crontab /etc/cron.d/rerb-cron
+
+# Lancement de cron au premier plan (Docker ne supporte pas les démons en arrière-plan)
+CMD ["cron", "-f"]

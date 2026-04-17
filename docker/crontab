@@ -1,0 +1,12 @@
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+PYTHONPATH=/app/src
+PG_HOST=postgres
+
+# Pipeline ETL — toutes les 5 min, sauf entre 1h et 3h (fenêtre de reset)
+*/5 0,3-23 * * * root /scripts/pipeline.sh
+
+# Reset quotidien à 1h01
+1 1 * * * root /scripts/reset.sh
+
+# Ligne vide obligatoire en fin de fichier cron.d

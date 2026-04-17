@@ -281,3 +281,12 @@ def test_health_accessible_sans_cle():
         response = client.get("/health")
 
     assert response.status_code == 200
+
+
+# ── /metrics — Prometheus ─────────────────────────────────────────────────────
+
+def test_metrics_accessible_sans_cle():
+    """/metrics est public et retourne du texte Prometheus."""
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    assert "http_requests_total" in response.text

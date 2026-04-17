@@ -13,7 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - db-network
 
@@ -36,77 +35,21 @@ services:
     networks:
       - db-network
 
-  # Initialisation Airflow (migration BDD + création admin)
-  airflow-init:
-    image: apache/airflow:2.10.0
-    container_name: airflow-init
+  # Pipeline ETL — cron toutes les 5 min + reset quotidien à 1h01
+  cron:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.cron
+    container_name: rerb-cron
+    restart: unless-stopped
     depends_on:
       - postgres
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${PG_USER}:${PG_PASSWORD}@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
-      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER}
-      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
-      AIRFLOW_ADMIN_EMAIL: ${AIRFLOW_ADMIN_EMAIL}
-    command: bash -c "airflow db migrate && airflow users create --username $$AIRFLOW_ADMIN_USER --password $$AIRFLOW_ADMIN_PASSWORD --firstname Admin --lastname Admin --role Admin --email $$AIRFLOW_ADMIN_EMAIL"
-    networks:
-      - db-network
-    restart: on-failure
-
-  # Webserver Airflow
-  airflow-webserver:
-    image: apache/airflow:2.10.0
-    container_name: airflow-webserver
-    restart: unless-stopped
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${PG_USER}:${PG_PASSWORD}@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
-      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      PG_HOST: postgres
-    ports:
-      - "8080:8080"
     volumes:
-      - ./dags:/opt/airflow/dags
-      - ./src:/opt/airflow/src
-      - ./documents:/opt/airflow/documents
-      - ./data:/opt/airflow/data
-      - ./logs:/opt/airflow/logs
-      - ./.env:/opt/airflow/.env
-    command: webserver
-    networks:
-      - db-network
-
-  # Scheduler Airflow
-  airflow-scheduler:
-    image: apache/airflow:2.10.0
-    container_name: airflow-scheduler
-    restart: unless-stopped
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${PG_USER}:${PG_PASSWORD}@postgres/airflow
-      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
-      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      PG_HOST: postgres
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./src:/opt/airflow/src
-      - ./documents:/opt/airflow/documents
-      - ./data:/opt/airflow/data
-      - ./logs:/opt/airflow/logs
-      - ./.env:/opt/airflow/.env
-    command: scheduler
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./documents:/app/documents
+      - ./logs:/app/logs
+      - ./.env:/app/.env
     networks:
       - db-network
 
@@ -149,8 +92,63 @@ services:
     networks:
       - db-network
 
+  # Collecte de métriques — scrape l'API toutes les 60s
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    ports:
+      - "9090:9090"
+    networks:
+      - db-network
+
+  # Tableau de bord — consulte Prometheus
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - db-network
+
+  # Métriques système des conteneurs (CPU, RAM) pour Grafana
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - db-network
+
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   db-network:

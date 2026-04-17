@@ -1,0 +1,69 @@
+{
+  "title": "RERB API",
+  "uid": "rerb-api",
+  "schemaVersion": 38,
+  "refresh": "1m",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Latence p95 par route (s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (handler, le) (rate(http_request_duration_seconds_bucket{job=\"rerb-api\"}[5m])))",
+          "legendFormat": "{{handler}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Requêtes par seconde",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (handler) (rate(http_requests_total{job=\"rerb-api\"}[5m]))",
+          "legendFormat": "{{handler}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Taux d'erreurs (5xx) %",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "100 * (sum(rate(http_requests_total{job=\"rerb-api\",status_code=~\"5..\"}[5m])) or vector(0)) / sum(rate(http_requests_total{job=\"rerb-api\"}[5m]))",
+          "legendFormat": "erreurs 5xx %"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "CPU conteneur API (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"cadvisor\",name=\"rerb-api\"}[2m])) * 100",
+          "legendFormat": "CPU %"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "RAM conteneur API (Mo)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "container_memory_usage_bytes{job=\"cadvisor\",name=\"rerb-api\"} / 1024 / 1024",
+          "legendFormat": "RAM Mo"
+        }
+      ]
+    }
+  ]
+}

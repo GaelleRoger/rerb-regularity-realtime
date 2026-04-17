@@ -23,6 +23,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 
@@ -35,6 +36,11 @@ RACINE = Path(__file__).parent.parent.parent
 load_dotenv(RACINE / ".env")
 
 app = FastAPI(title="RERB Regularity API")
+
+# ── Monitoring Prometheus ─────────────────────────────────────────────────────
+# Expose /metrics avec latence, volume de requêtes et taux d'erreurs par route.
+# La route /metrics est publique (pas de clé API requise).
+Instrumentator().instrument(app).expose(app)
 
 # ── Authentification par API key ──────────────────────────────────────────────
 
