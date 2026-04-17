@@ -3,15 +3,17 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+import sys
 
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.connexion_postgres import creer_engine
 
-RACINE = Path(__file__).parent.parent
+RACINE = Path(__file__).parent.parent.parent
 
 load_dotenv(RACINE / ".env")
 
@@ -210,6 +212,8 @@ def main() -> None:
         charger_csv_en_base(engine, chemin, table=f"{prefixe}_trv", colonnes_a_exclure=[])
         charger_csv_en_base(engine, chemin, table=prefixe, colonnes_a_exclure=COLONNES_META)
         enregistrer_fichier(engine, chemin.name)
+        chemin.unlink()
+        print(f"Supprimé : {chemin.name}")
 
 
 if __name__ == "__main__":

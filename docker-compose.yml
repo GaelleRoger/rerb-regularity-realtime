@@ -114,7 +114,7 @@ services:
   streamlit:
     build:
       context: .
-      dockerfile: src/api/Dockerfile.streamlit
+      dockerfile: docker/Dockerfile.streamlit
     container_name: rerb-streamlit
     restart: unless-stopped
     depends_on:
@@ -132,7 +132,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: src/api/Dockerfile
+      dockerfile: docker/Dockerfile.api
     container_name: rerb-api
     restart: unless-stopped
     depends_on:

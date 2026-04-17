@@ -6,7 +6,7 @@ RUN pip install --no-cache-dir \
     streamlit \
     requests
 
-CMD ["streamlit", "run", "src/api/app.py", \
+CMD ["streamlit", "run", "src/dashboard/app.py", \
      "--server.port=8501", \
      "--server.address=0.0.0.0", \
      "--server.headless=true"]

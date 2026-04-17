@@ -21,8 +21,8 @@ import streamlit as st
 
 # ── CONSTANTES ────────────────────────────────────────────────────────────────
 
-# Dossier contenant les assets (logos, plan de ligne) — même dossier que ce script
-ASSETS = Path(__file__).parent
+# Dossier contenant les assets (logos, plan de ligne) — sous-dossier assets/
+ASSETS = Path(__file__).parent / "assets"
 
 # URL de l'API FastAPI (résolution Docker par nom de service)
 API_URL = "http://api:8000"

@@ -6,9 +6,11 @@ from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils.connexion_postgres import creer_engine
 
-RACINE = Path(__file__).parent.parent
+RACINE = Path(__file__).parent.parent.parent
 
 load_dotenv(RACINE / ".env")
 

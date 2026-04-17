@@ -9,7 +9,7 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 
-RACINE = Path(__file__).parent.parent
+RACINE = Path(__file__).parent.parent.parent
 
 load_dotenv(RACINE / ".env")
 

@@ -12,7 +12,7 @@ import os
 # Ajouter le chemin vers le dossier src pour importer les scripts
 # Ajuster le chemin selon votre structure de dossiers
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-PIPELINE_PATH = os.path.join(PROJECT_ROOT, 'src')
+PIPELINE_PATH = os.path.join(PROJECT_ROOT, 'src', 'pipeline')
 sys.path.insert(0, PIPELINE_PATH)
 
 # Configuration par défaut du DAG
