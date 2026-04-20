@@ -6,7 +6,7 @@
 ![CI](https://img.shields.io/badge/CI-GitHub_Actions-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-> **Pipeline ETL temps réel qui calcule et expose la régularité du RER B gare par gare, à partir des horaires officiels Île-de-France Mobilités.**
+> **Pipeline ETL temps réel qui calcule et expose la régularité du RER B par branches, à partir des horaires officiels Île-de-France Mobilités.**
 
 ---
 
@@ -18,12 +18,13 @@
 
 ## 🎯 Problématique
 
-La régularité du RER B est difficile à mesurer en temps réel : les données brutes de l'API IDFM contiennent des missions fantômes, des doublons préfixés `RATP` et des missions terminées qui persistent. Aucun outil public n'agrège ces données en scores lisibles par gare.
+Lorsque le trafic est annoncé perturbé sur le RER, il est parfois difficile d'estime "de combien" il est perturbé. Les usagers peuvent-ils faire leur trajet habituel moyennant quelques désagréments ou vaut-il mieux qu'ils reportent ou modifient leur voyage ?
 
 **Enjeux :**
-- Les horaires théoriques et réels divergent au fil de la journée, sans vue synthétique par direction
-- Les missions en circulation accumulent du retard entre leur premier et dernier arrêt
-- Une équipe data a besoin d'un indicateur fiable, mis à jour toutes les 5 minutes, sans intervention manuelle
+Proposer 3 indicateurs mis à jour toutes les 5 minutes pour avoir une meilleure vue d'ensemble du trafic
+- La régularité par direction et par branche, on regarde l'intervalle entre les trains
+- L'allongement du temps de parcours
+- La différence entre horaires réels et théoriques
 
 ## 💡 Solution
 
@@ -46,7 +47,7 @@ Un pipeline Python s'exécute en continu via un cron Docker : il interroge l'API
 | Couche          | Technologies                                              |
 | --------------- | --------------------------------------------------------- |
 | **Ingestion**   | API REST Île-de-France Mobilités, `requests`, `pandas`    |
-| **Processing**  | Python 3.12, `pandas`, SQL (window functions PostgreSQL)  |
+| **Processing**  | Python 3.12, `pandas`, SQL                                |
 | **Stockage**    | PostgreSQL 17                                             |
 | **Exposition**  | FastAPI 0.115, Streamlit, Pydantic v2                     |
 | **Infra**       | Docker Compose, cron, GitHub Actions CI                   |
@@ -155,7 +156,7 @@ La CI GitHub Actions exécute les tests unitaires à chaque push sur `main`.
 - [x] Dashboard Streamlit avec rafraîchissement automatique toutes les 5 min
 - [x] Monitoring Prometheus / Grafana avec dashboard préconstruit
 - [x] CI GitHub Actions
-- [ ] Déploiement sur VM cloud (OVH) pour démo publique
+- [ ] Déploiement sur VM cloud pour démo publique
 - [ ] Alertes Grafana (seuil de régularité critique)
 - [ ] Historisation longue durée et graphes de tendance sur 7 jours
 
@@ -164,9 +165,9 @@ La CI GitHub Actions exécute les tests unitaires à chaque push sur `main`.
 ## 🤝 Contact & Collaboration
 
 **Développé par :** Gaëlle Roger
-🔗 [LinkedIn](https://linkedin.com/in/gaelleroger) · 📧 [contact](mailto:gaelle.roger@example.com)
+🔗 [LinkedIn](https://linkedin.com/in/gaelle-roger) · 📧 [contact](mailto:gaelle.roger@ikmail.com)
 
-**Vous recrutez en Data Engineering ?**
+**Vous recrutez en Data Engineering / Architect ?**
 Je suis disponible pour en discuter — n'hésitez pas à me contacter directement.
 
 ---
