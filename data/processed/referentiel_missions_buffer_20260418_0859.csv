@@ -1,0 +1,42 @@
+code_mission,direction,gare_depart,gare_destination,nb_arrets_mission
+ELOI,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+EMMY,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+EPAF,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+GUIZ,Nord,Massy - Palaiseau,Aulnay-sous-Bois,23
+IDOR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,38
+IRUS,Nord,Massy - Palaiseau,Mitry - Claye,27
+IVIS,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,32
+KARI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+KFON,Sud,Mitry - Claye,Massy - Palaiseau,28
+KLAC,Sud,Mitry - Claye,Massy - Palaiseau,27
+KOCQ,Sud,La Croix de Berny,Massy - Palaiseau,5
+LORD,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+PAGE,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+PIER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+PLAC,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,30
+PPIT,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,34
+SORI,Sud,Mitry - Claye,Robinson,24
+STRI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+ULMS,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Laplace,11
+USER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Laplace,19
+PROC,Sud,Palaiseau,Saint Rémy-lès-Chevreuse,9
+ISOL,Nord,La Plaine Stade de France,Mitry - Claye,9
+ELFE,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+EAST,Nord,Saint-Michel Notre-Dame,Aéroport Charles de Gaulle 2 (Terminal 2),13
+IVAN,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,32
+GUAD,Nord,Massy - Palaiseau,Aulnay-sous-Bois,23
+KLEE,Sud,Mitry - Claye,Massy - Palaiseau,27
+ICAR,Nord,Vert Galant,Mitry - Claye,2
+SOSI,Sud,Port Royal,Robinson,10
+PAUL,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+PUMA,Sud,Cité Universitaire,Saint Rémy-lès-Chevreuse,22
+GSOL,Nord,Laplace,Aulnay-sous-Bois,14
+GONG,Nord,Châtelet les Halles,Aulnay-sous-Bois,7
+ECCO,Nord,Gare du Nord,Aéroport Charles de Gaulle 2 (Terminal 2),11
+LORE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+LORE,Sud,Parc des Expositions,Orsay-Ville,32
+PLIC,Sud,Bourg-la-Reine,Saint Rémy-lès-Chevreuse,13
+ELAN,Nord,Le Blanc-Mesnil,Aéroport Charles de Gaulle 2 (Terminal 2),6
+EMIR,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+GEDO,Nord,La Plaine Stade de France,Aulnay-sous-Bois,5
+STIN,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25

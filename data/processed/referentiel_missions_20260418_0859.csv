@@ -1,0 +1,42 @@
+code_mission,direction,gare_depart,gare_destination,nb_arrets_mission
+PROC,Sud,Palaiseau,Saint Rémy-lès-Chevreuse,9
+PIER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Saint Rémy-lès-Chevreuse,31
+KARI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Massy - Palaiseau,21
+ULMS,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Laplace,11
+ECCO,Nord,Gare du Nord,Aéroport Charles de Gaulle 2 (Terminal 2),11
+KLEE,Sud,Mitry - Claye,Massy - Palaiseau,27
+EPAF,Nord,Saint-Rémy-lès-Chevreuse,Aéroport Charles de Gaulle 2 (Terminal 2),31
+EMMY,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
+IVAN,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,32
+ELFE,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+ELOI,Nord,Robinson,Aéroport Charles de Gaulle 2 (Terminal 2),25
+KLAC,Sud,Mitry - Claye,Massy - Palaiseau,27
+EAST,Nord,Saint-Michel Notre-Dame,Aéroport Charles de Gaulle 2 (Terminal 2),13
+PUMA,Sud,Cité Universitaire,Saint Rémy-lès-Chevreuse,22
+LORE,Sud,Parc des Expositions,Orsay-Ville,32
+ISOL,Nord,La Plaine Stade de France,Mitry - Claye,9
+KOCQ,Sud,La Croix de Berny,Massy - Palaiseau,5
+PLAC,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,30
+SORI,Sud,Mitry - Claye,Robinson,24
+GUAD,Nord,Massy - Palaiseau,Aulnay-sous-Bois,23
+SOSI,Sud,Port Royal,Robinson,10
+LORE,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+KFON,Sud,Mitry - Claye,Massy - Palaiseau,28
+PPIT,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,34
+ELAN,Nord,Le Blanc-Mesnil,Aéroport Charles de Gaulle 2 (Terminal 2),6
+LORD,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Orsay-Ville,32
+GUIZ,Nord,Massy - Palaiseau,Aulnay-sous-Bois,23
+GONG,Nord,Châtelet les Halles,Aulnay-sous-Bois,7
+PAGE,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+IVIS,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,32
+STIN,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+PLIC,Sud,Bourg-la-Reine,Saint Rémy-lès-Chevreuse,13
+ICAR,Nord,Vert Galant,Mitry - Claye,2
+IDOR,Nord,Saint-Rémy-lès-Chevreuse,Mitry - Claye,38
+GEDO,Nord,La Plaine Stade de France,Aulnay-sous-Bois,5
+PAUL,Sud,Mitry - Claye,Saint Rémy-lès-Chevreuse,31
+STRI,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Robinson,25
+USER,Sud,Aéroport Charles de Gaulle 2 (Terminal 2),Laplace,19
+GSOL,Nord,Laplace,Aulnay-sous-Bois,14
+IRUS,Nord,Massy - Palaiseau,Mitry - Claye,27
+EMIR,Nord,Orsay Ville,Aéroport Charles de Gaulle 2 (Terminal 2),32
