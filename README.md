@@ -12,7 +12,8 @@
 
 ## 🎬 Démo Live
 
-*(Screenshot ou GIF à ajouter)*
+[Demo](docs/apprerb1.png)
+
 
 ---
 
