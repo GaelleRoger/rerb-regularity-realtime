@@ -58,6 +58,8 @@ Un pipeline Python s'exécute en continu via un cron Docker : il interroge l'API
 
 ## 🏗️ Architecture
 
+> Les décisions architecturales clés sont documentées dans [docs/adr/](docs/adr/).
+
 ```
 Île-de-France Mobilités API
         │
