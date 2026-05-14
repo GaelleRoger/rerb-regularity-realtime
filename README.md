@@ -12,7 +12,7 @@
 
 ## 🎬 Démo Live
 
-[Demo](docs/apprerb1.png)
+[Demo](documents/apprerb1.png)
 
 
 ---
