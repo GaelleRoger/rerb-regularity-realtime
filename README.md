@@ -12,6 +12,8 @@
 
 ## 🎬 Démo Live
 
+🌐 **[http://34.79.248.79:8501/](http://34.79.248.79:8501/)**
+
 [Demo](documents/apprerb1.png)
 
 
@@ -159,7 +161,7 @@ La CI GitHub Actions exécute les tests unitaires à chaque push sur `main`.
 - [x] Dashboard Streamlit avec rafraîchissement automatique toutes les 5 min
 - [x] Monitoring Prometheus / Grafana avec dashboard préconstruit
 - [x] CI GitHub Actions
-- [ ] Déploiement sur VM cloud pour démo publique
+- [x] Déploiement sur VM cloud pour démo publique
 - [ ] Alertes Grafana (seuil de régularité critique)
 - [ ] Historisation longue durée et graphes de tendance sur 7 jours
 
