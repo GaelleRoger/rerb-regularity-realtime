@@ -295,3 +295,13 @@ if ecarts_data:
             )
 else:
     st.warning("Aucune donnée d'écarts horaires disponible.")
+
+# ── FOOTER ────────────────────────────────────────────────────────────────────
+st.divider()
+st.markdown(
+    "<div style='text-align:center;color:#888;font-size:0.85rem;'>"
+    "Code source : <a href='https://github.com/GaelleRoger/rerb-regularity-realtime/blob/main/README.md' "
+    "target='_blank' style='color:#0072BC;'>github.com/GaelleRoger/rerb-regularity-realtime</a>"
+    "</div>",
+    unsafe_allow_html=True,
+)
