@@ -27,10 +27,10 @@ def assurer_colonnes_arrets(engine: Engine, table: str) -> None:
     une branche et que l'API IDFM ne renvoie pas certains arrêts.
     """
     with engine.begin() as conn:
-        result = conn.execute(text(
-            "SELECT column_name FROM information_schema.columns WHERE table_name = :t",
+        result = conn.execute(
+            text("SELECT column_name FROM information_schema.columns WHERE table_name = :t"),
             {"t": table},
-        ))
+        )
         existantes = {row[0] for row in result}
         for arret in ARRETS_REQUIS:
             if arret not in existantes:
