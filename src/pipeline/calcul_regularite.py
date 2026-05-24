@@ -14,6 +14,29 @@ load_dotenv(RACINE / ".env")
 
 TABLE_CIBLE = "regularite_theorique"
 
+ARRETS_REQUIS = [
+    "sceaux", "antony", "bourg_la_reine", "chatelet_les_halles",
+    "aulnay_sous_bois", "aeroport_cdg_1_rer", "vert_galant",
+]
+
+
+def assurer_colonnes_arrets(engine: Engine, table: str) -> None:
+    """Ajoute en NULL les colonnes d'arrêts absentes de la table source.
+
+    Permet au pipeline de tourner même quand le trafic est interrompu sur
+    une branche et que l'API IDFM ne renvoie pas certains arrêts.
+    """
+    with engine.begin() as conn:
+        result = conn.execute(text(
+            "SELECT column_name FROM information_schema.columns WHERE table_name = :t",
+            {"t": table},
+        ))
+        existantes = {row[0] for row in result}
+        for arret in ARRETS_REQUIS:
+            if arret not in existantes:
+                conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {arret} TEXT'))
+                print(f"[INFO] Colonne absente ajoutée comme NULL : {table}.{arret}")
+
 SQL_RECONSTRUCTION = f"""
     DROP TABLE IF EXISTS {TABLE_CIBLE};
 
@@ -24,7 +47,7 @@ WITH init AS (
         MIN(date_observation) OVER (PARTITION BY mission) AS date_min,
         mission, sceaux, antony, bourg_la_reine, chatelet_les_halles,
         aulnay_sous_bois, aeroport_cdg_1_rer, vert_galant,
-        (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N','M','G') THEN 'Nord' ELSE 'Sud' END) AS direction
+        (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N','M','G','A') THEN 'Nord' ELSE 'Sud' END) AS direction
     FROM horaires_theoriques_trv
 ),
 delta AS (
@@ -418,6 +441,8 @@ def inserer_snapshot_regularite(engine: Engine) -> None:
 def main() -> None:
     """Point d'entrée du script."""
     engine = creer_engine()
+    assurer_colonnes_arrets(engine, "horaires_theoriques_trv")
+    assurer_colonnes_arrets(engine, "horaires_reels_trv")
     reconstruire_table(engine)
     reconstruire_table_reelle(engine)
     creer_table_histo_regularite(engine)
