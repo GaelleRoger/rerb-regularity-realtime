@@ -92,7 +92,7 @@ SQL_RECONSTRUCTION_REELLE = f"""
 
     CREATE TABLE {TABLE_CIBLE_REELLE} AS
     WITH init as (SELECT 
-        mission, (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N','M','G') THEN 'Nord' ELSE 'Sud' END) AS direction,
+        mission, (CASE WHEN SUBSTRING(mission,1,1) IN ('E','I','J','O','Q','N','M','G','A') THEN 'Nord' ELSE 'Sud' END) AS direction,
         MAX(sceaux) as sceaux, MAX(antony) as antony,
         MAX(bourg_la_reine) as bourg_la_reine, MAX(chatelet_les_halles) as chatelet_les_halles,
         MAX(aulnay_sous_bois) as aulnay_sous_bois, 
