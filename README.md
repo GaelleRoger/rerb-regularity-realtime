@@ -14,7 +14,7 @@
 
 🌐 **[http://34.79.248.79:8501/](http://34.79.248.79:8501/)**
 
-[Demo](documents/apprerb1.png)
+![Demo](documents/apprerb1.png)
 
 
 ---
